@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
 public class Usuario implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
+    @SequenceGenerator(name = "usuario_seq", sequenceName = "SEQ_USUARIO", allocationSize = 1)
     @Column(name = "id_usuario")
     private Long idUsuario;
 
@@ -48,7 +49,7 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 1)
     private String estado; // ACTIVO, INACTIVO
 
     @Column(name = "fecha_creacion")
@@ -96,7 +97,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return "ACTIVO".equalsIgnoreCase(estado);
+        return "A".equalsIgnoreCase(estado);
     }
 
     @Override
@@ -106,7 +107,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return "ACTIVO".equalsIgnoreCase(estado);
+        return "A".equalsIgnoreCase(estado);
     }
 
     /**

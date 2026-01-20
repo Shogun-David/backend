@@ -42,16 +42,20 @@ public class JwtService {
     }
 
     /**
-     * Genera un token JWT para un usuario.
+     * 🔹 PASO 4: Genera token JWT firmado
      * 
-     * El token incluye:
+     * Crea un token que contiene:
      * - Subject: username
-     * - Claims personalizados: roles
-     * - Fecha de emisión
-     * - Fecha de expiración
+     * - Claims: roles (ADMIN, USUARIO)
+     * - Issued At: fecha/hora de creación
+     * - Expiration: fecha/hora de expiración (24h)
+     * - Signature: HMAC-SHA256 con clave secreta
      * 
-     * @param usuario El usuario para el cual generar el token
-     * @return String con el token JWT
+     * Cliente debe guardar este token y enviarlo en cada request:
+     * Authorization: Bearer <token>
+     * 
+     * @param usuario El usuario autenticado
+     * @return Token JWT firmado (String)
      */
     public String generateToken(Usuario usuario) {
         Map<String, Object> claims = new HashMap<>();

@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -32,19 +34,30 @@ public class AuthController {
     private final AuthService authService;
 
     /**
-     * Endpoint de login.
+     * Endpoint de prueba sin seguridad para verificar configuración.
+     */
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("✅ Endpoint público funcionando correctamente");
+    }
+
+    /**
+     * 🔹 PASO 1: Endpoint de login público
      * 
-     * Recibe credenciales (username y password) y retorna un token JWT si son válidas.
+     * Cliente → POST /auth/login con {"username": "admin", "password": "admin123"}
      * 
-     * Flujo:
-     * 1. Recibe LoginRequestDto con username y password
-     * 2. El AuthService valida las credenciales
-     * 3. Si son válidas, genera un token JWT
-     * 4. Retorna LoginResponseDto con el token
+     * Flujo completo:
+     * 1️⃣ Cliente envía POST /auth/login con credenciales
+     * 2️⃣ AuthController recibe y delega a AuthService
+     * 3️⃣ AuthService → AuthenticationManager.authenticate()
+     * 4️⃣ UsuarioService.loadUserByUsername() busca en BD
+     * 5️⃣ BCrypt compara password con hash de BD
+     * 6️⃣ Si válido → JwtService.generateToken() crea JWT
+     * 7️⃣ Retorna token al cliente
+     * 8️⃣ Cliente guarda JWT en localStorage/memoria
      * 
      * @param loginRequest DTO con username y password
-     * @return ResponseEntity con LoginResponseDto conteniendo el token JWT
-     * @throws org.springframework.security.core.AuthenticationException si las credenciales son inválidas
+     * @return ResponseEntity con token JWT
      */
     @PostMapping("/login")
     @Operation(
@@ -100,6 +113,27 @@ public class AuthController {
             )
     })
     public ResponseEntity<String> getCurrentUser() {
-        return ResponseEntity.ok("Usuario autenticado correctamente");
+        // Obtener el usuario autenticado del SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            String roles = authentication.getAuthorities().toString();
+            
+            String mensaje = String.format(
+                "✅ Autenticación válida\n" +
+                "Usuario: %s\n" +
+                "Roles: %s\n" +
+                "Tipo: %s",
+                username,
+                roles,
+                authentication.getClass().getSimpleName()
+            );
+            
+            return ResponseEntity.ok(mensaje);
+        }
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("❌ No autenticado");
     }
 }

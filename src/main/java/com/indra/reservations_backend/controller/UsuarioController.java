@@ -1,11 +1,14 @@
 package com.indra.reservations_backend.controller;
 
+import com.indra.reservations_backend.dto.UsuarioRequestDto;
 import com.indra.reservations_backend.dto.UsuarioResponseDto;
 import com.indra.reservations_backend.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +18,12 @@ import java.util.List;
 /**
  * Controlador para gestión de usuarios.
  * 
- * SOLO ADMIN puede:
+ * SOLO ADMIN y USUARIO puede:
  * - Ver todos los usuarios
  * - Ver detalles de un usuario
  * - Crear, actualizar y eliminar usuarios
  * 
- * Usa @PreAuthorize("hasRole('ADMIN')") para validar el rol.
+ * Usa @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')") para validar el rol.
  */
 @RestController
 @RequestMapping("/api/usuarios")
@@ -38,7 +41,7 @@ public class UsuarioController {
      * @return Lista de usuarios
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
     @Operation(
             summary = "Listar todos los usuarios",
             description = "Obtiene la lista completa de usuarios. Requiere rol ADMIN."
@@ -56,7 +59,7 @@ public class UsuarioController {
      * @return Datos del usuario
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
     @Operation(
             summary = "Obtener usuario por ID",
             description = "Obtiene los detalles de un usuario específico. Requiere rol ADMIN."
@@ -71,14 +74,15 @@ public class UsuarioController {
      * Solo ADMIN puede crear usuarios.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
     @Operation(
             summary = "Crear nuevo usuario",
             description = "Crea un nuevo usuario en el sistema. Requiere rol ADMIN."
     )
-    public ResponseEntity<String> createUsuario() {
-        // TODO: Implementar lógica de creación
-        return ResponseEntity.ok("Usuario creado (implementar lógica)");
+    // en esta linea se convierte de json a dto
+    public ResponseEntity<UsuarioResponseDto> createUsuario(@RequestBody @Valid UsuarioRequestDto request) {
+        UsuarioResponseDto creado = usuarioService.createUsuario(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
     /**
@@ -86,7 +90,7 @@ public class UsuarioController {
      * Solo ADMIN puede actualizar usuarios.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
     @Operation(
             summary = "Actualizar usuario",
             description = "Actualiza los datos de un usuario existente. Requiere rol ADMIN."
@@ -101,7 +105,7 @@ public class UsuarioController {
      * Solo ADMIN puede eliminar usuarios.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
     @Operation(
             summary = "Eliminar usuario",
             description = "Elimina un usuario del sistema. Requiere rol ADMIN."

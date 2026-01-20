@@ -26,17 +26,19 @@ public class AuthService {
     private final JwtService jwtService;
 
     /**
-     * Procesa el login de un usuario.
+     * 🔹 PASO 2-3-4: Procesa la autenticación
      * 
-     * Flujo:
-     * 1. Autentica las credenciales usando Spring Security
-     * 2. Si es exitoso, obtiene el usuario autenticado
-     * 3. Genera un token JWT con username y roles
-     * 4. Retorna el token en un DTO
+     * Flujo interno:
+     * 2️⃣ AuthenticationManager.authenticate() valida credenciales
+     *    ↓
+     * 3️⃣ Internamente llama a UsuarioService.loadUserByUsername()
+     *    ↓ Busca en BD (usuario + roles)
+     *    ↓ BCrypt compara passwords
+     * 4️⃣ Si válido → JwtService.generateToken() crea JWT firmado
      * 
-     * @param loginRequest Credenciales del usuario (username y password)
+     * @param loginRequest Credenciales del usuario
      * @return LoginResponseDto con el token JWT
-     * @throws org.springframework.security.core.AuthenticationException si las credenciales son inválidas
+     * @throws AuthenticationException si credenciales inválidas
      */
     public LoginResponseDto login(LoginRequestDto loginRequest) {
         // Autenticar al usuario con Spring Security

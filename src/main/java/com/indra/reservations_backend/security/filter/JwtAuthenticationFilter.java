@@ -7,7 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.lang.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,25 +18,31 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Filtro de autenticación JWT.
- * Extiende OncePerRequestFilter para garantizar una única ejecución por request.
+ * 🔹 PASO 6-7-8: Filtro de autenticación JWT
  * 
- * Responsabilidades:
- * - Interceptar cada request HTTP
- * - Extraer el token JWT del header Authorization
- * - Validar el token
- * - Poblar el SecurityContext con el usuario autenticado
+ * Intercepta TODOS los requests (excepto públicos) y valida el token.
  * 
- * Flujo:
- * 1. Lee el header Authorization
- * 2. Si existe y comienza con "Bearer ", extrae el token
- * 3. Valida el token y extrae el username
- * 4. Carga los detalles del usuario desde la BD
- * 5. Crea un Authentication y lo almacena en SecurityContext
- * 6. Continúa con la cadena de filtros
+ * Flujo para requests protegidos:
+ * 6️⃣ Cliente envía request con header: Authorization: Bearer <JWT>
+ *    ↓
+ * 7️⃣ JwtAuthenticationFilter intercepta antes de llegar al controller
+ *    ↓ Extrae token del header
+ *    ↓ JwtService.validateToken() verifica firma y expiración
+ *    ↓
+ * 8️⃣ Si válido:
+ *    - Carga usuario desde BD
+ *    - Establece SecurityContext con autenticación
+ *    - Request procede al controller ✅
+ *    
+ * 9️⃣ Si inválido/expirado:
+ *    - NO establece SecurityContext
+ *    - Spring Security retorna 401 Unauthorized ❌
+ * 
+ * Endpoints públicos (/auth/**, /swagger-ui/**) se saltan este filtro.
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -44,16 +50,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
         
         // Excluir endpoints públicos del filtro JWT
         String path = request.getServletPath();
+        log.debug("JwtAuthenticationFilter - Path: {}", path);
+        
         if (path.startsWith("/auth/") || 
-            path.startsWith("/swagger-ui") || 
-            path.startsWith("/v3/api-docs")) {
+            path.startsWith("/swagger-ui") ||
+            path.startsWith("/v3/api-docs") ||
+            path.startsWith("/swagger-resources") ||
+            path.startsWith("/webjars") ||
+            path.equals("/swagger-ui.html")) {
+            log.debug("JwtAuthenticationFilter - Skipping JWT validation for public path: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
