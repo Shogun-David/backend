@@ -1,0 +1,174 @@
+package com.indra.reservations_backend.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.indra.reservations_backend.commons.models.FilterModel;
+import com.indra.reservations_backend.commons.models.PaginationModel;
+import com.indra.reservations_backend.commons.models.SortModel;
+import com.indra.reservations_backend.dto.SalaRequestDto;
+import com.indra.reservations_backend.dto.SalaResponseDto;
+import com.indra.reservations_backend.mappers.SalaMapper;
+import com.indra.reservations_backend.models.SalaEntity;
+import com.indra.reservations_backend.repository.ISalaRepository;
+import com.indra.reservations_backend.service.ISalaService;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class SalaServiceImpl implements ISalaService {
+
+    private final SalaMapper salaMapper;
+    private final ISalaRepository salaRepository;
+    private final EntityManager entityManager;
+
+    @Override
+    public SalaResponseDto save(SalaRequestDto request) {
+        SalaEntity salaEntity = salaMapper.toEntity(request);
+        SalaEntity savedEntity = salaRepository.save(salaEntity);
+        return salaMapper.toResponseDto(savedEntity);
+    }
+
+    @Override
+    public SalaResponseDto update(Long id, SalaRequestDto dto) {
+        SalaEntity existingEntity = salaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No se encontró la Sala con id: " + id));
+
+        BeanUtils.copyProperties(dto, existingEntity, "idSala", "estado");
+
+        SalaEntity updatedEntity = salaRepository.save(existingEntity);
+        return salaMapper.toResponseDto(updatedEntity);
+    }
+
+    @Override
+    public SalaResponseDto findById(Long id) {
+        SalaEntity salaEntity = salaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No se encontró la Sala con id: " + id));
+        return salaMapper.toResponseDto(salaEntity);
+    }
+
+    @Override
+    public SalaResponseDto delete(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    }
+
+    @Override
+    public PageImpl<SalaResponseDto> getPagination(PaginationModel paginationModel) {
+        int page = paginationModel.getPageNumber() != null
+                ? paginationModel.getPageNumber()
+                : 0;
+
+        int rowsPerPage = paginationModel.getRowsPerPage() != null
+                ? paginationModel.getRowsPerPage()
+                : 5;
+
+        Pageable pageable = PageRequest.of(page, rowsPerPage);
+
+        // Query base
+        String baseSelect = """
+                    SELECT new com.indra.reservations_backend.dto.SalaResponseDto(
+                        s.idSala,
+                        s.nombre,
+                        s.capacidad,
+                        s.ubicacion,
+                        s.estado
+                    )
+                    FROM SalaEntity s
+                """;
+
+        String baseCount = """
+                    SELECT COUNT(s.idSala)
+                    FROM SalaEntity s
+                """;
+
+        // WHERE dinámico (solo estado)
+        String whereClause = buildWhereClause(paginationModel.getFilters());
+
+        // ORDER BY dinámico controlado
+        String orderByClause = buildOrderByClause(paginationModel.getSorts());
+
+        String sql = baseSelect + whereClause + orderByClause;
+        String sqlCount = baseCount + whereClause;
+
+        TypedQuery<SalaResponseDto> querySelect = entityManager.createQuery(sql, SalaResponseDto.class);
+        TypedQuery<Long> queryCount = entityManager.createQuery(sqlCount, Long.class);
+
+        // Seteo de parámetros
+        setWhereParameters(querySelect, paginationModel.getFilters());
+        setWhereParameters(queryCount, paginationModel.getFilters());
+
+        // Paginación
+        querySelect.setFirstResult((int) pageable.getOffset());
+        querySelect.setMaxResults(pageable.getPageSize());
+
+        List<SalaResponseDto> results = querySelect.getResultList();
+        Long total = queryCount.getSingleResult();
+
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    private String buildWhereClause(List<FilterModel> filters) {
+        if (filters == null || filters.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
+
+        for (FilterModel filter : filters) {
+
+            if ("estado".equals(filter.getField())) {
+                where.append(" AND s.estado = :estado ");
+            }
+
+        }
+        return where.toString();
+    }
+
+    private void setWhereParameters(TypedQuery<?> query, List<FilterModel> filters) {
+        if (filters == null)
+            return;
+
+        for (FilterModel filter : filters) {
+
+            if ("estado".equals(filter.getField())) {
+                query.setParameter("estado", filter.getValue());
+            }
+
+        }
+    }
+
+    private String buildOrderByClause(List<SortModel> sorts) {
+
+        // Orden por defecto
+        if (sorts == null || sorts.isEmpty()) {
+            return " ORDER BY s.idSala ASC ";
+        }
+
+        SortModel sort = sorts.get(0);
+
+        String direction = "ASC";
+        if ("DESC".equalsIgnoreCase(sort.getDirection())) {
+            direction = "DESC";
+        }
+
+        if ("nombre".equals(sort.getColName())) {
+            return " ORDER BY s.nombre " + direction;
+        }
+
+        if ("estado".equals(sort.getColName())) {
+            return " ORDER BY s.estado " + direction;
+        }
+
+        return " ORDER BY s.idSala ASC ";
+    }
+
+}
