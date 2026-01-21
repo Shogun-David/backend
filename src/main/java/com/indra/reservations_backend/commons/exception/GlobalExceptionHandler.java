@@ -33,7 +33,9 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler({
-      BadRequestException.class
+      BadRequestException.class,
+      ResourceNotFoundException.class,
+      BussinessException.class
   })
   public ResponseEntity<ExceptionDto> handleCustomExceptions(RuntimeException ex, HttpServletRequest request) {
     HttpStatus status = getStatus(ex);
@@ -45,7 +47,12 @@ public class GlobalExceptionHandler {
         .codeStatus(status.value())
         .build();
 
-    log.error(ex.getClass().getSimpleName() + ": ", ex);
+    if (status.is5xxServerError()) {
+        log.error("Error interno", ex);
+    } else {
+        log.warn("Error funcional: {}", ex.getMessage());
+    }
+
 
     return ResponseEntity.status(status).body(dto);
   }

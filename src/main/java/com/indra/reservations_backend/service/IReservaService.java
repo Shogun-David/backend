@@ -1,14 +1,16 @@
 package com.indra.reservations_backend.service;
 
-import java.util.List;
+
+import org.springframework.data.domain.PageImpl;
 
 import com.indra.reservations_backend.commons.interfaces.ICrudCommonsDto;
+import com.indra.reservations_backend.dto.CancelarReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaResponseDto;
 
 public interface IReservaService extends ICrudCommonsDto<ReservaRequestDto, ReservaResponseDto, Long>{
     
-    List<ReservaResponseDto> getReservasByUser(Long userId);
+    PageImpl<ReservaResponseDto> getReservasByUser(Long userId, String estado, int page, int size);
 
-    ReservaResponseDto cancelarReserva(Long idReserva);
+    void cancelarReserva(Long idReserva, CancelarReservaRequestDto requestDto);
 }
