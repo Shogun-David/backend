@@ -47,23 +47,32 @@ public class UsuarioService implements UserDetailsService {
      * 🔹 PASO 3: Carga usuario desde BD durante autenticación
      * 
      * Llamado automáticamente por AuthenticationManager al hacer login.
+     * ✅ MEJORADO: Busca por username O email (permite login con ambos)
      * 
      * Flujo:
-     * - Busca usuario en BD por username
+     * - Intenta buscar por username primero
+     * - Si no encuentra, busca por email
      * - Carga roles asociados (ADMIN, USUARIO)
      * - Retorna Usuario que implementa UserDetails
      * - Spring Security compara password automáticamente
      * 
-     * @param username El nombre de usuario
+     * @param username El nombre de usuario O email
      * @return UserDetails (Usuario con roles)
      * @throws UsernameNotFoundException si el usuario no existe
      */
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "Usuario no encontrado: " + username));
+        // Intentar buscar por username primero
+        var usuario = usuarioRepository.findByUsername(username);
+        
+        // Si no encuentra, intentar por email
+        if (usuario.isEmpty()) {
+            usuario = usuarioRepository.findByEmail(username);
+        }
+        
+        return usuario.orElseThrow(() -> new UsernameNotFoundException(
+                "Usuario no encontrado con username o email: " + username));
     }
 
     /**
@@ -128,7 +137,28 @@ public class UsuarioService implements UserDetailsService {
                 .build();
 
         Usuario guardado = usuarioRepository.save(usuario);
+        
+        // Log para debug
+        org.slf4j.LoggerFactory.getLogger(this.getClass())
+                .info("✅ Usuario registrado: {} con roles: {}", 
+                    guardado.getUsername(), 
+                    guardado.getRolesList());
+        
         return toDto(guardado);
+    }
+
+    /**
+     * Elimina un usuario del sistema por su ID.
+     * 
+     * @param idUsuario ID del usuario a eliminar
+     * @throws RuntimeException si el usuario no existe
+     */
+    @Transactional
+    public void deleteUsuario(Long idUsuario) {
+        if (!usuarioRepository.existsById(idUsuario)) {
+            throw new RuntimeException("Usuario no encontrado con ID: " + idUsuario);
+        }
+        usuarioRepository.deleteById(idUsuario);
     }
 
     private void validarUnicidad(UsuarioRequestDto request) {
@@ -141,21 +171,31 @@ public class UsuarioService implements UserDetailsService {
     }
 
     private Set<Rol> resolverRoles(List<String> roles) {
+        // Si roles está vacío/null:
+        // - En registro público: asignar "USUARIO" por defecto
+        // - En creación por admin: usar lo que se envíe o USUARIO por defecto
         List<String> nombres = (roles == null || roles.isEmpty())
                 ? List.of("USUARIO")
                 : roles;
 
         Set<Rol> resultado = new HashSet<>();
         for (String nombre : nombres) {
-            Rol rol = rolRepository.findByNombre(nombre)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol no encontrado: " + nombre));
+            // Normalizar nombre del rol (convertir a mayúsculas)
+            String nombreNormalizado = nombre.toUpperCase().trim();
+            
+            Rol rol = rolRepository.findByNombre(nombreNormalizado)
+                    .orElseThrow(() -> {
+                        org.slf4j.LoggerFactory.getLogger(this.getClass())
+                                .error("❌ Rol no encontrado: {}", nombreNormalizado);
+                        return new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                            "Rol no encontrado: " + nombreNormalizado);
+                    });
             resultado.add(rol);
+            
+            org.slf4j.LoggerFactory.getLogger(this.getClass())
+                    .debug("✅ Rol asignado: {}", nombreNormalizado);
         }
         return resultado;
-    }
-
-    private String definirEstado(String estado) {
-        return (estado == null || estado.isEmpty()) ? "A" : estado.toUpperCase();
     }
 
     /**

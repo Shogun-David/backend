@@ -1,8 +1,6 @@
 package com.indra.reservations_backend.controller;
 
-import com.indra.reservations_backend.dto.ReservaAdminDto;
 import com.indra.reservations_backend.dto.ReservaRequestDto;
-import com.indra.reservations_backend.dto.ReservaResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

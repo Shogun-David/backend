@@ -41,7 +41,7 @@ public class UsuarioController {
      * @return Lista de usuarios
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Listar todos los usuarios",
             description = "Obtiene la lista completa de usuarios. Requiere rol ADMIN."
@@ -70,17 +70,40 @@ public class UsuarioController {
     }
 
     /**
-     * Ejemplo de endpoint para crear usuario (solo esqueleto).
-     * Solo ADMIN puede crear usuarios.
+     * 🔓 ENDPOINT PÚBLICO: Registrar nuevo usuario.
+     * 
+     * Permite que cualquier usuario NO autenticado se registre.
+     * NO requiere token JWT.
+     * 
+     * @param request Datos del nuevo usuario (username, password, email)
+     * @return UsuarioResponseDto creado
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
     @Operation(
-            summary = "Crear nuevo usuario",
-            description = "Crea un nuevo usuario en el sistema. Requiere rol ADMIN."
+            summary = "Registrar nuevo usuario (PÚBLICO)",
+            description = "Crea un nuevo usuario en el sistema. PÚBLICO - NO requiere autenticación."
     )
-    // en esta linea se convierte de json a dto
-    public ResponseEntity<UsuarioResponseDto> createUsuario(@RequestBody @Valid UsuarioRequestDto request) {
+    public ResponseEntity<UsuarioResponseDto> registrar(@RequestBody @Valid UsuarioRequestDto request) {
+        UsuarioResponseDto creado = usuarioService.createUsuario(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+    }
+
+    /**
+     * 🔐 Crear usuario por ADMIN.
+     * 
+     * SOLO ADMIN puede crear usuarios desde el panel de administración.
+     * Requiere token JWT con rol ADMIN.
+     * 
+     * @param request Datos del nuevo usuario
+     * @return UsuarioResponseDto creado
+     */
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Crear usuario (ADMIN)",
+            description = "Crea un nuevo usuario. SOLO ADMIN. Requiere autenticación con rol ADMIN."
+    )
+    public ResponseEntity<UsuarioResponseDto> crearUsuarioAdmin(@RequestBody @Valid UsuarioRequestDto request) {
         UsuarioResponseDto creado = usuarioService.createUsuario(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
@@ -105,13 +128,13 @@ public class UsuarioController {
      * Solo ADMIN puede eliminar usuarios.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Eliminar usuario",
             description = "Elimina un usuario del sistema. Requiere rol ADMIN."
     )
     public ResponseEntity<String> deleteUsuario(@PathVariable Long id) {
-        // TODO: Implementar lógica de eliminación
-        return ResponseEntity.ok("Usuario " + id + " eliminado (implementar lógica)");
+        usuarioService.deleteUsuario(id);
+        return ResponseEntity.ok("Usuario " + id + " eliminado correctamente");
     }
 }

@@ -57,14 +57,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Excluir endpoints públicos del filtro JWT
         String path = request.getServletPath();
-        log.debug("JwtAuthenticationFilter - Path: {}", path);
+        String method = request.getMethod();
+        log.debug("JwtAuthenticationFilter - Path: {} Method: {}", path, method);
         
-        if (path.startsWith("/auth/") || 
+        // 🔓 ENDPOINTS PÚBLICOS - No validar JWT
+        // IMPORTANTE: Permitir OPTIONS (preflight) en TODOS los endpoints
+        if (method.equals("OPTIONS") ||
+            path.startsWith("/auth/") || 
             path.startsWith("/swagger-ui") ||
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/swagger-resources") ||
             path.startsWith("/webjars") ||
-            path.equals("/swagger-ui.html")) {
+            path.equals("/swagger-ui.html") ||
+            (path.equals("/api/usuarios") && method.equals("POST"))) {  // 🔓 POST /api/usuarios PÚBLICO
             log.debug("JwtAuthenticationFilter - Skipping JWT validation for public path: {}", path);
             filterChain.doFilter(request, response);
             return;

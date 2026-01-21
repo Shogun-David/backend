@@ -3,6 +3,7 @@ package com.indra.reservations_backend.security.config;
 import com.indra.reservations_backend.security.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -60,14 +61,33 @@ public class SecurityConfig {
                 // Configurar autorización de requests
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos (sin autenticación) - ORDEN IMPORTANTE
+                        // Las reglas más específicas deben ir PRIMERO
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // ✅ Permitir preflight CORS en TODOS los endpoints
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/test").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/", "/**/*.js", "/**/*.css", "/**/*.html", "/**/*.png", "/**/*.jpg").permitAll()
+                        
+                        // 🔓 POST /api/usuarios PÚBLICO (registro de usuarios)
+                        // DEBE ir ANTES de otros matchers de /api/usuarios
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+                        
+                        // 🔐 Endpoints ADMIN - requieren rol ADMIN
+                        // GET /api/usuarios (listar)
+                        // DELETE /api/usuarios/{id} (eliminar)
+                        // POST /api/usuarios/admin (crear por admin)
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios/admin").hasRole("ADMIN")
+                        
+                        // 🔐 Endpoints del panel de USUARIO (requieren @usuario en email)
+                        .requestMatchers("/api/panel-usuario/**").hasRole("USUARIO")
                         
                         // Todos los demás endpoints requieren autenticación
                         .anyRequest().authenticated()
@@ -91,14 +111,47 @@ public class SecurityConfig {
     
     /**
      * Configuración de CORS para permitir peticiones desde Swagger y frontend.
+     * 
+     * ⚠️ IMPORTANTE: El orden de CORS es crítico
+     * Las solicitudes preflight (OPTIONS) deben ser permitidas ANTES que POST/PUT/DELETE
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*")); // En producción, especificar dominios
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(false); // false cuando allowedOrigins es "*"
+        
+        // Permitir orígenes específicos (cambiar en producción)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:4200",      // Angular frontend
+            "http://localhost:3000",      // Otro puerto común
+            "http://127.0.0.1:4200",
+            "http://127.0.0.1:3000"
+        ));
+        
+        // Permitir todos los métodos HTTP incluyendo OPTIONS (preflight)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Permitir headers comunes (incluyendo Authorization y Content-Type)
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+        
+        // Permitir headers de respuesta CORS
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials"
+        ));
+        
+        // Permitir credenciales si se usan orígenes específicos
+        configuration.setAllowCredentials(true);
+        
+        // Cache del preflight por 1 hora
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

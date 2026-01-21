@@ -1,7 +1,6 @@
 package com.indra.reservations_backend.controller;
 
 import com.indra.reservations_backend.dto.SalaRequestDto;
-import com.indra.reservations_backend.dto.SalaResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Controlador para gestión de salas.
