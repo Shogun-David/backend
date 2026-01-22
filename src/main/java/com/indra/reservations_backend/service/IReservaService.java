@@ -10,7 +10,7 @@ import com.indra.reservations_backend.dto.ReservaResponseDto;
 
 public interface IReservaService extends ICrudCommonsDto<ReservaRequestDto, ReservaResponseDto, Long>{
     
-    PageImpl<ReservaResponseDto> getReservasByUser(Long userId, String estado, int page, int size);
+    PageImpl<ReservaResponseDto> getReservasByUser(String estado, int page, int size);
 
     void cancelarReserva(Long idReserva, CancelarReservaRequestDto requestDto);
 }

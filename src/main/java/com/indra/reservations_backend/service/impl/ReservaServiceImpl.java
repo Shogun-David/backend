@@ -23,6 +23,7 @@ import com.indra.reservations_backend.commons.exception.ResourceNotFoundExceptio
 import com.indra.reservations_backend.dto.CancelarReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaResponseDto;
+import com.indra.reservations_backend.security.utils.SecurityUtils;
 import com.indra.reservations_backend.service.IReservaService;
 
 import jakarta.transaction.Transactional;
@@ -37,7 +38,7 @@ public class ReservaServiceImpl implements IReservaService{
 
     @Override
     public ReservaResponseDto findById(Long id) {
-        Long userId = 1L;
+        Long userId = SecurityUtils.getAuthenticatedUserId();
 
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
             .withCatalogName("PKG_RESERVAS")
@@ -60,11 +61,11 @@ public class ReservaServiceImpl implements IReservaService{
 
     @Override
     public PageImpl<ReservaResponseDto> getReservasByUser(
-            Long userId,
             String estado,
             int page,
             int size
     ) {
+        Long userId = SecurityUtils.getAuthenticatedUserId();
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
             .withCatalogName("PKG_RESERVAS")
             .withProcedureName("SP_LISTAR_POR_USUARIO")
@@ -105,7 +106,7 @@ public class ReservaServiceImpl implements IReservaService{
     @Transactional
     @Override
     public ReservaResponseDto save(ReservaRequestDto reserva) {
-        Long userId = 1L;
+        Long userId = SecurityUtils.getAuthenticatedUserId();
 
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
             .withCatalogName("PKG_RESERVAS")
@@ -166,7 +167,7 @@ public class ReservaServiceImpl implements IReservaService{
    @Override
     public ReservaResponseDto update(Long id, ReservaRequestDto reserva) {
 
-        Long userId = 1L; // luego vendrá del token
+        Long userId = SecurityUtils.getAuthenticatedUserId(); // luego vendrá del token
 
         try {
 
@@ -213,7 +214,7 @@ public class ReservaServiceImpl implements IReservaService{
 
     @Transactional
     public void cancelarReserva(Long idReserva, CancelarReservaRequestDto requestDto) {
-        Long userId = 1L;
+        Long userId = SecurityUtils.getAuthenticatedUserId();
 
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
             .withCatalogName("PKG_RESERVAS")

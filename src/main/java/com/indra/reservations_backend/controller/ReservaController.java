@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +20,6 @@ import com.indra.reservations_backend.dto.CancelarReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaResponseDto;
 import com.indra.reservations_backend.service.IReservaService;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -29,27 +29,29 @@ public class ReservaController {
 
     private final IReservaService reservaService;
 
-
-    @GetMapping("/by-user/{userId}")
-    public ResponseEntity<Iterable<ReservaResponseDto>> getReservasByUser(@PathVariable Long userId,
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/by-user")
+    public ResponseEntity<Iterable<ReservaResponseDto>> getReservasByUser(
                                                                     @RequestParam(required = false) String estado,
                                                                     @RequestParam(defaultValue = "1") int page,
                                                                     @RequestParam(defaultValue = "10") int size
     ){
-        return ResponseEntity.ok(reservaService.getReservasByUser(userId, estado, page, size));
+        return ResponseEntity.ok(reservaService.getReservasByUser(estado, page, size));
     }
 
-
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<ReservaResponseDto> crearReserva(@RequestBody ReservaRequestDto requestDto){
         return new ResponseEntity<ReservaResponseDto>(reservaService.save(requestDto), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/{id}")
     public ResponseEntity<ReservaResponseDto> actualizarReserva(@PathVariable Long id,@RequestBody ReservaRequestDto requestDto){
         return new ResponseEntity<ReservaResponseDto>(reservaService.update(id, requestDto), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/cancelar/{id}")
     public ResponseEntity<Void> cancelarReserva(@PathVariable Long id, @RequestBody CancelarReservaRequestDto requestDto){
         reservaService.cancelarReserva(id, requestDto);
