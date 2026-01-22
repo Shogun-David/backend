@@ -6,6 +6,7 @@ import com.indra.reservations_backend.dto.SalaRequestDto;
 import com.indra.reservations_backend.dto.SalaResponseDto;
 
 public interface ISalaService
-        extends ICrudCommonsDto<SalaRequestDto, SalaResponseDto, Long>, IPaginationCommons<SalaResponseDto> {
+                extends ICrudCommonsDto<SalaRequestDto, SalaResponseDto, Long>, IPaginationCommons<SalaResponseDto> {
 
+        SalaResponseDto cambiarEstadoSala(Long id);
 }

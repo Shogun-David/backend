@@ -164,11 +164,27 @@ public class SalaServiceImpl implements ISalaService {
             return " ORDER BY s.nombre " + direction;
         }
 
-        if ("estado".equals(sort.getColName())) {
-            return " ORDER BY s.estado " + direction;
+        if ("capacidad".equals(sort.getColName())) {
+            return " ORDER BY s.capacidad " + direction;
         }
 
         return " ORDER BY s.idSala ASC ";
+    }
+
+    @Override
+    public SalaResponseDto cambiarEstadoSala(Long id) {
+        SalaEntity salaEntity = salaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No se encontró la Sala con id: " + id));
+
+        if (salaEntity.getEstado().equals("D")) {
+            salaEntity.setEstado("N");
+        } else {
+            salaEntity.setEstado("D");
+        }
+
+        SalaEntity updatedSala = salaRepository.save(salaEntity);
+
+        return salaMapper.toResponseDto(updatedSala);
     }
 
 }

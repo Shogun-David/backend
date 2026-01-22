@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +32,11 @@ public class SalaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(salaService.save(dto));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<SalaResponseDto> update(@PathVariable Long id, @RequestBody SalaRequestDto dto) {
+        return ResponseEntity.status(HttpStatus.OK).body(salaService.update(id, dto));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SalaResponseDto> getMethodName(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.findById(id));
@@ -38,7 +44,7 @@ public class SalaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<SalaResponseDto> delete(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(salaService.delete(id));
+        return ResponseEntity.status(HttpStatus.OK).body(salaService.cambiarEstadoSala(id));
     }
 
     @PostMapping("/pagination")
