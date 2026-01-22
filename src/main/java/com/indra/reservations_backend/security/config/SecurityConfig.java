@@ -60,7 +60,6 @@ public class SecurityConfig {
                 // Configurar autorización de requests
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos (sin autenticación) - ORDEN IMPORTANTE
-                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()

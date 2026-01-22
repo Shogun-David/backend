@@ -2,9 +2,13 @@ package com.indra.reservations_backend.service;
 
 import com.indra.reservations_backend.dto.LoginRequestDto;
 import com.indra.reservations_backend.dto.LoginResponseDto;
-import com.indra.reservations_backend.model.Usuario;
+import com.indra.reservations_backend.dto.ValidateTokenResponseDto;
+import com.indra.reservations_backend.models.Usuario;
 import com.indra.reservations_backend.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -56,6 +60,19 @@ public class AuthService {
         String token = jwtService.generateToken(usuario);
 
         // Retornar respuesta con el token
-        return new LoginResponseDto(token);
+        return new LoginResponseDto(token, usuario.getUsername(), usuario.getRolesList());
     }
+
+    public ValidateTokenResponseDto validateToken(String token) {
+
+        if (!jwtService.validateToken(token)) {
+            throw new RuntimeException("Token invalido");
+        }
+
+        String username = jwtService.extractUsername(token);
+        List<String> roles = jwtService.extractRolesAsList(token);
+
+        return new ValidateTokenResponseDto(true, username, roles);
+    }
+
 }

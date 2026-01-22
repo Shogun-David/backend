@@ -2,8 +2,8 @@ package com.indra.reservations_backend.service;
 
 import com.indra.reservations_backend.dto.UsuarioRequestDto;
 import com.indra.reservations_backend.dto.UsuarioResponseDto;
-import com.indra.reservations_backend.model.Rol;
-import com.indra.reservations_backend.model.Usuario;
+import com.indra.reservations_backend.models.Rol;
+import com.indra.reservations_backend.models.Usuario;
 import com.indra.reservations_backend.repository.RolRepository;
 import com.indra.reservations_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -116,20 +116,20 @@ public class UsuarioService implements UserDetailsService {
     public UsuarioResponseDto createUsuario(UsuarioRequestDto request) {
         validarUnicidad(request);
 
-        Set<Rol> rolesAsignados = resolverRoles(request.getRoles());
-
         Usuario usuario = Usuario.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
                 .estado("A")
                 .fechaCreacion(LocalDateTime.now())
-                .roles(rolesAsignados)
+                .roles(obtenerRolPorDefecto()) // ✅ SIEMPRE USUARIO
                 .build();
 
         Usuario guardado = usuarioRepository.save(usuario);
         return toDto(guardado);
     }
+
+
 
     private void validarUnicidad(UsuarioRequestDto request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
@@ -140,23 +140,18 @@ public class UsuarioService implements UserDetailsService {
         }
     }
 
-    private Set<Rol> resolverRoles(List<String> roles) {
-        List<String> nombres = (roles == null || roles.isEmpty())
-                ? List.of("USUARIO")
-                : roles;
+    private Set<Rol> obtenerRolPorDefecto() {
+        Rol rolUsuario = rolRepository.findByNombre("USER")
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Rol por defecto USER no existe en la BD"
+                ));
 
-        Set<Rol> resultado = new HashSet<>();
-        for (String nombre : nombres) {
-            Rol rol = rolRepository.findByNombre(nombre)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol no encontrado: " + nombre));
-            resultado.add(rol);
-        }
-        return resultado;
-    }
+        Set<Rol> roles = new HashSet<>();
+        roles.add(rolUsuario);
+    return roles;
+}
 
-    private String definirEstado(String estado) {
-        return (estado == null || estado.isEmpty()) ? "A" : estado.toUpperCase();
-    }
 
     /**
      * Convierte una entidad Usuario a UsuarioResponseDto.

@@ -1,6 +1,5 @@
 package com.indra.reservations_backend.security.jwt;
 
-import com.indra.reservations_backend.model.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -8,10 +7,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.indra.reservations_backend.models.Usuario;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -93,6 +95,12 @@ public class JwtService {
     public String extractRoles(String token) {
         return extractClaim(token, claims -> claims.get("roles", String.class));
     }
+
+    public List<String> extractRolesAsList(String token) {
+        String roles = extractRoles(token); // "ADMIN,USER"
+        return List.of(roles.split(","));
+    }
+
 
     /**
      * Extrae la fecha de expiración del token.

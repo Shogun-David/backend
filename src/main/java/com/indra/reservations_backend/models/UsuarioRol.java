@@ -1,4 +1,4 @@
-package com.indra.reservations_backend.model;
+package com.indra.reservations_backend.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

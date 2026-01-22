@@ -1,4 +1,4 @@
-package com.indra.reservations_backend.model;
+package com.indra.reservations_backend.models;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Table(name = "usuario")
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

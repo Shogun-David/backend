@@ -8,8 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,9 +26,5 @@ public class UsuarioRequestDto {
     @Email(message = "Formato de email inválido")
     @Size(max = 100, message = "El email no puede exceder 100 caracteres")
     private String email;
-
-    private List<String> roles;
-
-    // Opcional: si no se envía, el servicio asignará "A" por defecto
-    private String estado;
+  
 }

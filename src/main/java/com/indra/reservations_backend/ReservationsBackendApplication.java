@@ -18,7 +18,7 @@ public class ReservationsBackendApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		String rawPassword = "admin123";
+		String rawPassword = "123456789";
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 		System.out.println("Generated BCrypt hash for '" + rawPassword + "': " + encodedPassword);
 	}

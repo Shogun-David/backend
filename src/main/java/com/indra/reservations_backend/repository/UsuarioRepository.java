@@ -1,8 +1,9 @@
 package com.indra.reservations_backend.repository;
 
-import com.indra.reservations_backend.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.indra.reservations_backend.models.Usuario;
 
 import java.util.Optional;
 
