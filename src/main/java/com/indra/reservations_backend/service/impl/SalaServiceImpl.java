@@ -8,6 +8,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.indra.reservations_backend.commons.dto.EstadoSala;
+import com.indra.reservations_backend.commons.exception.BussinessException;
+import com.indra.reservations_backend.commons.exception.ResourceNotFoundException;
 import com.indra.reservations_backend.commons.models.FilterModel;
 import com.indra.reservations_backend.commons.models.PaginationModel;
 import com.indra.reservations_backend.commons.models.SortModel;
@@ -15,6 +18,7 @@ import com.indra.reservations_backend.dto.SalaRequestDto;
 import com.indra.reservations_backend.dto.SalaResponseDto;
 import com.indra.reservations_backend.mappers.SalaMapper;
 import com.indra.reservations_backend.models.SalaEntity;
+import com.indra.reservations_backend.repository.IReservaRepository;
 import com.indra.reservations_backend.repository.ISalaRepository;
 import com.indra.reservations_backend.service.ISalaService;
 
@@ -29,9 +33,13 @@ public class SalaServiceImpl implements ISalaService {
     private final SalaMapper salaMapper;
     private final ISalaRepository salaRepository;
     private final EntityManager entityManager;
+    private final IReservaRepository reservaRepository;
 
     @Override
     public SalaResponseDto save(SalaRequestDto request) {
+        if (request.getCapacidad() <= 0) {
+            throw new BussinessException("La capacidad debe ser mayor a 0");
+        }
         SalaEntity salaEntity = salaMapper.toEntity(request);
         SalaEntity savedEntity = salaRepository.save(salaEntity);
         return salaMapper.toResponseDto(savedEntity);
@@ -39,10 +47,12 @@ public class SalaServiceImpl implements ISalaService {
 
     @Override
     public SalaResponseDto update(Long id, SalaRequestDto dto) {
-        SalaEntity existingEntity = salaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se encontró la Sala con id: " + id));
+        SalaEntity salaEntity = salaMapper.toEntity(dto);
 
-        BeanUtils.copyProperties(dto, existingEntity, "idSala", "estado");
+        SalaEntity existingEntity = salaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la Sala con id: " + id));
+
+        BeanUtils.copyProperties(salaEntity, existingEntity, "idSala", "estado");
 
         SalaEntity updatedEntity = salaRepository.save(existingEntity);
         return salaMapper.toResponseDto(updatedEntity);
@@ -51,7 +61,7 @@ public class SalaServiceImpl implements ISalaService {
     @Override
     public SalaResponseDto findById(Long id) {
         SalaEntity salaEntity = salaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se encontró la Sala con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la Sala con id: " + id));
         return salaMapper.toResponseDto(salaEntity);
     }
 
@@ -138,11 +148,9 @@ public class SalaServiceImpl implements ISalaService {
             return;
 
         for (FilterModel filter : filters) {
-
             if ("estado".equals(filter.getField())) {
                 query.setParameter("estado", filter.getValue());
             }
-
         }
     }
 
@@ -173,14 +181,22 @@ public class SalaServiceImpl implements ISalaService {
 
     @Override
     public SalaResponseDto cambiarEstadoSala(Long id) {
-        SalaEntity salaEntity = salaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se encontró la Sala con id: " + id));
+        Integer existe = reservaRepository.existeReservaActivaSala(id);
 
-        if (salaEntity.getEstado().equals("D")) {
-            salaEntity.setEstado("N");
-        } else {
-            salaEntity.setEstado("D");
+        if (existe != null && existe == 1) {
+            throw new BussinessException("No se puede cambiar el estado de la sala con reservas activas");
         }
+        
+        SalaEntity salaEntity = salaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la Sala con id: " + id));
+
+        EstadoSala estadoActual = EstadoSala.fromCode(salaEntity.getEstado());
+
+        EstadoSala nuevoEstado = estadoActual == EstadoSala.DISPONIBLE
+                ? EstadoSala.NO_DISPONIBLE
+                : EstadoSala.DISPONIBLE;
+
+        salaEntity.setEstado(nuevoEstado.getCode());
 
         SalaEntity updatedSala = salaRepository.save(salaEntity);
 

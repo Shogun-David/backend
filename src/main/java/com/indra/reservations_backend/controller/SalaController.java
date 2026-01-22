@@ -8,6 +8,8 @@ import com.indra.reservations_backend.dto.SalaRequestDto;
 import com.indra.reservations_backend.dto.SalaResponseDto;
 import com.indra.reservations_backend.service.ISalaService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -28,12 +30,12 @@ public class SalaController {
     private ISalaService salaService;
 
     @PostMapping
-    public ResponseEntity<SalaResponseDto> create(@RequestBody SalaRequestDto dto) {
+    public ResponseEntity<SalaResponseDto> create(@Valid @RequestBody SalaRequestDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(salaService.save(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SalaResponseDto> update(@PathVariable Long id, @RequestBody SalaRequestDto dto) {
+    public ResponseEntity<SalaResponseDto> update(@PathVariable Long id, @Valid @RequestBody SalaRequestDto dto) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.update(id, dto));
     }
 
@@ -42,7 +44,7 @@ public class SalaController {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.findById(id));
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}/estado")
     public ResponseEntity<SalaResponseDto> delete(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.cambiarEstadoSala(id));
     }
