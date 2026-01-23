@@ -1,6 +1,8 @@
 package com.indra.reservations_backend.controller;
 
 import com.indra.reservations_backend.dto.ReservaRequestDto;
+import com.indra.reservations_backend.dto.ReservaResponseDto;
+import com.indra.reservations_backend.service.ReservaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Controlador para gestión de reservas.
@@ -32,6 +36,8 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "Bearer Authentication")
 public class ReservaController {
 
+    private final ReservaService reservaService;
+
     /**
      * Obtiene las reservas del usuario autenticado.
      * Accesible para ADMIN y USUARIO (cada uno ve sus propias reservas).
@@ -45,10 +51,10 @@ public class ReservaController {
             summary = "Ver mis reservas",
             description = "Obtiene las reservas del usuario autenticado. Requiere autenticación."
     )
-    public ResponseEntity<String> getMisReservas(Authentication authentication) {
+    public ResponseEntity<List<ReservaResponseDto>> getMisReservas(Authentication authentication) {
         String username = authentication.getName();
-        // TODO: Implementar servicio de reservas
-        return ResponseEntity.ok("Reservas de " + username + " (implementar servicio)");
+        List<ReservaResponseDto> reservas = reservaService.getMisReservas(username);
+        return ResponseEntity.ok(reservas);
     }
 
     /**
@@ -63,9 +69,9 @@ public class ReservaController {
             summary = "Ver todas las reservas",
             description = "Obtiene todas las reservas del sistema. Requiere rol ADMIN."
     )
-    public ResponseEntity<String> getAllReservas() {
-        // TODO: Implementar servicio de reservas
-        return ResponseEntity.ok("Todas las reservas del sistema (implementar servicio)");
+    public ResponseEntity<List<ReservaResponseDto>> getAllReservas() {
+        List<ReservaResponseDto> reservas = reservaService.getAllReservas();
+        return ResponseEntity.ok(reservas);
     }
 
     /**
@@ -82,12 +88,12 @@ public class ReservaController {
             summary = "Crear reserva",
             description = "Crea una nueva reserva. Requiere autenticación (ADMIN o USUARIO)."
     )
-    public ResponseEntity<String> createReserva(
+    public ResponseEntity<ReservaResponseDto> createReserva(
             @RequestBody ReservaRequestDto request,
             Authentication authentication) {
         String username = authentication.getName();
-        // TODO: Implementar lógica de creación
-        return ResponseEntity.ok("Reserva creada por " + username + ": " + request.toString());
+        ReservaResponseDto reserva = reservaService.createReserva(request, username);
+        return ResponseEntity.ok(reserva);
     }
 
     /**
@@ -112,12 +118,8 @@ public class ReservaController {
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         
-        // TODO: Implementar lógica de cancelación con validación:
-        // - Si es ADMIN, puede cancelar cualquier reserva
-        // - Si es USUARIO, verificar que la reserva le pertenece
-        
-        return ResponseEntity.ok("Reserva " + id + " cancelada por " + username + 
-                " (isAdmin: " + isAdmin + ")");
+        reservaService.cancelarReserva(id, username, isAdmin);
+        return ResponseEntity.ok("Reserva " + id + " cancelada correctamente");
     }
 
     /**

@@ -13,5 +13,5 @@ public class ReservaRequestDto {
     private Long idSala;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
-    private String observacion;
+    private String proposito;
 }   
