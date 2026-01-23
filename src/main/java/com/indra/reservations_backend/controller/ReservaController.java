@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -94,7 +95,7 @@ public class ReservaController {
             @ApiResponse(responseCode = "201", description = "Reserva creada correctamente"),
             @ApiResponse(responseCode = "403", description = "Acceso denegado")
     })
-    public ResponseEntity<ReservaResponseDto> crearReserva(@RequestBody ReservaRequestDto requestDto) {
+    public ResponseEntity<ReservaResponseDto> crearReserva(@Valid @RequestBody ReservaRequestDto requestDto) {
         return new ResponseEntity<>(reservaService.save(requestDto), HttpStatus.CREATED);
     }
 
