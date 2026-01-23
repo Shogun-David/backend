@@ -1,7 +1,9 @@
 package com.indra.reservations_backend.service.impl;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +23,8 @@ import com.indra.reservations_backend.commons.exception.BadRequestException;
 import com.indra.reservations_backend.commons.exception.BussinessException;
 import com.indra.reservations_backend.commons.exception.ResourceNotFoundException;
 import com.indra.reservations_backend.dto.CancelarReservaRequestDto;
+import com.indra.reservations_backend.dto.ReservaAdminDto;
+import com.indra.reservations_backend.dto.ReservaDisponibilidadDto;
 import com.indra.reservations_backend.dto.ReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaResponseDto;
 import com.indra.reservations_backend.security.utils.SecurityUtils;
@@ -36,7 +40,7 @@ public class ReservaServiceImpl implements IReservaService{
     
     private final JdbcTemplate jdbcTemplate;
 
-    @Override
+     @Override
     public ReservaResponseDto findById(Long id) {
         Long userId = SecurityUtils.getAuthenticatedUserId();
 
@@ -65,6 +69,7 @@ public class ReservaServiceImpl implements IReservaService{
             int page,
             int size
     ) {
+
         Long userId = SecurityUtils.getAuthenticatedUserId();
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
             .withCatalogName("PKG_RESERVAS")
@@ -92,6 +97,41 @@ public class ReservaServiceImpl implements IReservaService{
         @SuppressWarnings("unchecked")
         List<ReservaResponseDto> reservas =
             (List<ReservaResponseDto>) result.get("CUR_RESERVAS");
+
+        long totalRegistros =
+            ((Number) result.get("p_total")).longValue();
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        return new PageImpl<>(reservas, pageable, totalRegistros);
+    }
+
+    @Override
+    public PageImpl<ReservaAdminDto> getReservationsAdmin(String estado, int page, int size) {
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+            .withCatalogName("PKG_RESERVAS")
+            .withProcedureName("SP_LISTAR_ADMIN")
+            .declareParameters(
+                new SqlParameter("p_estado", Types.VARCHAR),
+                new SqlParameter("p_page", Types.NUMERIC),
+                new SqlParameter("p_page_size", Types.NUMERIC),
+                new SqlOutParameter("p_total", Types.NUMERIC)
+            )
+            .returningResultSet(
+                "CUR_RESERVAS",
+                new BeanPropertyRowMapper<>(ReservaAdminDto.class)
+            );
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("p_estado", estado)
+            .addValue("p_page", page)
+            .addValue("p_page_size", size);
+
+        Map<String, Object> result = jdbcCall.execute(params);
+
+        @SuppressWarnings("unchecked")
+        List<ReservaAdminDto> reservas =
+            (List<ReservaAdminDto>) result.get("CUR_RESERVAS");
 
         long totalRegistros =
             ((Number) result.get("p_total")).longValue();
@@ -164,54 +204,7 @@ public class ReservaServiceImpl implements IReservaService{
     }
 
 
-   @Override
-    public ReservaResponseDto update(Long id, ReservaRequestDto reserva) {
-
-        Long userId = SecurityUtils.getAuthenticatedUserId(); // luego vendrá del token
-
-        try {
-
-            SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withCatalogName("PKG_RESERVAS")
-                .withProcedureName("SP_ACTUALIZAR_RESERVA")
-                .declareParameters(
-                    new SqlParameter("p_id_reserva", Types.NUMERIC),
-                    new SqlParameter("p_id_usuario", Types.NUMERIC),
-                    new SqlParameter("p_id_sala", Types.NUMERIC),
-                    new SqlParameter("p_fecha_inicio", Types.TIMESTAMP),
-                    new SqlParameter("p_fecha_fin", Types.TIMESTAMP),
-                    new SqlParameter("p_observacion", Types.VARCHAR)
-                );
-
-            MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("p_id_reserva", id)
-                .addValue("p_id_usuario", userId)
-                .addValue("p_id_sala", reserva.getIdSala())
-                .addValue("p_fecha_inicio", reserva.getFechaInicio())
-                .addValue("p_fecha_fin", reserva.getFechaFin())
-                .addValue("p_observacion", reserva.getObservacion());
-
-            jdbcCall.execute(params);
-
-            return this.findById(id);
-
-        } catch (DataAccessException ex) {
-
-            SQLException sqlEx = (SQLException) ex.getCause();
-
-            int errorCode = sqlEx.getErrorCode();
-            String message = sqlEx.getMessage();
-
-            // Errores de negocio (los que tú definiste)
-            if (errorCode >= 20100 && errorCode <= 20999) {
-                throw new BussinessException(message);
-            }
-
-            // Error técnico
-            throw new BussinessException("ERROR_ACTUALIZAR_RESERVA" + ex);
-        }
-    }
-
+  
     @Transactional
     public void cancelarReserva(Long idReserva, CancelarReservaRequestDto requestDto) {
         Long userId = SecurityUtils.getAuthenticatedUserId();
@@ -234,15 +227,8 @@ public class ReservaServiceImpl implements IReservaService{
             if (root instanceof SQLException sqlEx) {
                 switch (sqlEx.getErrorCode()) {
 
-                    case 20105 -> 
-                        throw new BadRequestException(
-                            "Reserva ya cancelada o finalizada"
-                        );
-
-                    case 20104 -> 
-                        throw new BadRequestException(
-                            "Sala no encontrada"
-                    );
+                    case 20105 ->  throw new BadRequestException( "Reserva ya cancelada o finalizada" );
+                    case 20104 ->  throw new BadRequestException("Sala no encontrada");
                     default -> throw new BussinessException("ERROR_TECNICO");
                 }
             }
@@ -255,10 +241,32 @@ public class ReservaServiceImpl implements IReservaService{
     }
 
     @Override
-    public ReservaResponseDto delete(Long id) {
+    public List<ReservaDisponibilidadDto> getDisponibilidadSalaMes(
+            Long idSala,
+            LocalDate fechaInicio,
+            LocalDate fechaFin
+    ) {
 
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+            .withCatalogName("PKG_RESERVAS")
+            .withProcedureName("SP_LISTAR_RESERVAS_MES")
+            .declareParameters(
+                new SqlParameter("p_id_sala", Types.NUMERIC),
+                new SqlParameter("p_fecha_ini", Types.DATE),
+                new SqlParameter("p_fecha_fin", Types.DATE)
+            )
+            .returningResultSet(
+                "CUR_RESERVAS",
+                new BeanPropertyRowMapper<>(ReservaDisponibilidadDto.class)
+            );
+
+        Map<String, Object> result = jdbcCall.execute(
+            idSala,
+            Date.valueOf(fechaInicio),
+            Date.valueOf(fechaFin)
+        );
+
+        return (List<ReservaDisponibilidadDto>) result.get("CUR_RESERVAS");
     }
-
 
 }

@@ -41,7 +41,7 @@ public class UsuarioController {
      * @return Lista de usuarios
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Listar todos los usuarios",
             description = "Obtiene la lista completa de usuarios. Requiere rol ADMIN."
@@ -59,7 +59,7 @@ public class UsuarioController {
      * @return Datos del usuario
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(
             summary = "Obtener usuario por ID",
             description = "Obtiene los detalles de un usuario específico. Requiere rol ADMIN."
@@ -74,7 +74,7 @@ public class UsuarioController {
      * Solo ADMIN puede crear usuarios.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(
             summary = "Crear nuevo usuario",
             description = "Crea un nuevo usuario en el sistema. Requiere rol ADMIN."
@@ -85,33 +85,5 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    /**
-     * Ejemplo de endpoint para actualizar usuario (solo esqueleto).
-     * Solo ADMIN puede actualizar usuarios.
-     */
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
-    @Operation(
-            summary = "Actualizar usuario",
-            description = "Actualiza los datos de un usuario existente. Requiere rol ADMIN."
-    )
-    public ResponseEntity<String> updateUsuario(@PathVariable Long id) {
-        // TODO: Implementar lógica de actualización
-        return ResponseEntity.ok("Usuario " + id + " actualizado (implementar lógica)");
-    }
 
-    /**
-     * Ejemplo de endpoint para eliminar usuario (solo esqueleto).
-     * Solo ADMIN puede eliminar usuarios.
-     */
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USUARIO')")
-    @Operation(
-            summary = "Eliminar usuario",
-            description = "Elimina un usuario del sistema. Requiere rol ADMIN."
-    )
-    public ResponseEntity<String> deleteUsuario(@PathVariable Long id) {
-        // TODO: Implementar lógica de eliminación
-        return ResponseEntity.ok("Usuario " + id + " eliminado (implementar lógica)");
-    }
 }

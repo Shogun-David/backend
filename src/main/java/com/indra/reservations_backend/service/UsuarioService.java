@@ -87,7 +87,7 @@ public class UsuarioService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     public List<UsuarioResponseDto> getAllUsuarios() {
-        return usuarioRepository.findAll()
+        return usuarioRepository.findAllByRoleNombre("USER")
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
