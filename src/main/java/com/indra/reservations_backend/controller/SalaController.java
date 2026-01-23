@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+
 @RequestMapping("/salas")
 @RestController
 public class SalaController {
@@ -52,7 +53,7 @@ public class SalaController {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.cambiarEstadoSala(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/pagination")
     public ResponseEntity<Iterable<SalaResponseDto>> getPagination(@RequestBody PaginationModel paginationModel) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.getPagination(paginationModel));
