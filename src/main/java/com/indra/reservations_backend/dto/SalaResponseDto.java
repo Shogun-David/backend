@@ -16,3 +16,4 @@ public class SalaResponseDto {
     private String ubicacion;
     private String estado;
 }
+//-- IGNORE ---

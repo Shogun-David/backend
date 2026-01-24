@@ -15,16 +15,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import jakarta.persistence.PrePersist;
 
-/**
- * Entidad puente que representa la tabla usuario_rol.
- * Permite trabajar con la relación Usuario ↔ Rol como entidad dedicada
- * cuando se requiere consultar o añadir metadatos adicionales.
- */
+
+
 @Entity
-@Table(name = "usuario_rol")
+@Table(name = "USUARIO_ROL")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,34 +30,23 @@ import java.io.Serializable;
 @Builder
 public class UsuarioRol {
 
-    @EmbeddedId
-    private UsuarioRolId id;
+    
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("idUsuario")
-    @JoinColumn(name = "id_usuario")
-    private Usuario usuario;
+    @ManyToOne
+    @JoinColumn(name = "ID_USUARIO")
+    private UsuarioEntity usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("idRol")
-    @JoinColumn(name = "id_rol")
+    @ManyToOne
+    @JoinColumn(name = "ID_ROL")
     private Rol rol;
+    
+    @Column(name = "FECHA_ASIGNACION", nullable = false)
+    private LocalDateTime fechaAsignacion;
 
-    /**
-     * Clave compuesta para la tabla usuario_rol.
-     */
-    @Embeddable
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @EqualsAndHashCode
-    public static class UsuarioRolId implements Serializable {
-
-        @Column(name = "id_usuario")
-        private Long idUsuario;
-
-        @Column(name = "id_rol")
-        private Long idRol;
+    @PrePersist
+    protected void onCreate() {
+        this.fechaAsignacion = LocalDateTime.now();
+        
     }
+   
 }

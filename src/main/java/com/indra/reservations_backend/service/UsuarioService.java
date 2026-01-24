@@ -3,7 +3,7 @@ package com.indra.reservations_backend.service;
 import com.indra.reservations_backend.dto.UsuarioRequestDto;
 import com.indra.reservations_backend.dto.UsuarioResponseDto;
 import com.indra.reservations_backend.models.Rol;
-import com.indra.reservations_backend.models.Usuario;
+import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.repository.RolRepository;
 import com.indra.reservations_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +74,7 @@ public class UsuarioService implements UserDetailsService {
      * @throws UsernameNotFoundException si no existe
      */
     @Transactional(readOnly = true)
-    public Usuario findByUsername(String username) {
+    public UsuarioEntity findByUsername(String username) {
         return usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Usuario no encontrado: " + username));
@@ -101,7 +101,7 @@ public class UsuarioService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     public UsuarioResponseDto getUsuarioById(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
+        UsuarioEntity usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
         return toDto(usuario);
     }
@@ -116,7 +116,7 @@ public class UsuarioService implements UserDetailsService {
     public UsuarioResponseDto createUsuario(UsuarioRequestDto request) {
         validarUnicidad(request);
 
-        Usuario usuario = Usuario.builder()
+        UsuarioEntity usuario = UsuarioEntity.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
@@ -125,7 +125,7 @@ public class UsuarioService implements UserDetailsService {
                 .roles(obtenerRolPorDefecto()) // ✅ SIEMPRE USUARIO
                 .build();
 
-        Usuario guardado = usuarioRepository.save(usuario);
+        UsuarioEntity guardado = usuarioRepository.save(usuario);
         return toDto(guardado);
     }
 
@@ -159,7 +159,7 @@ public class UsuarioService implements UserDetailsService {
      * @param usuario La entidad Usuario
      * @return DTO con datos del usuario (sin password)
      */
-    private UsuarioResponseDto toDto(Usuario usuario) {
+    private UsuarioResponseDto toDto(UsuarioEntity usuario) {
         return new UsuarioResponseDto(
                 usuario.getIdUsuario(),
                 usuario.getUsername(),
@@ -265,16 +265,16 @@ public class UsuarioService implements UserDetailsService {
      * @return Lista de Usuario entities con roles cargados
      */
     @Transactional(readOnly = true)
-    public List<Usuario> listarUsuariosConSPEntity() {
+    public List<UsuarioEntity> listarUsuariosConSPEntity() {
         try {
             StoredProcedureQuery query = entityManager
-                    .createStoredProcedureQuery("DBSGR.AUTH.SP_LISTAR_USUARIOS", Usuario.class)
+                    .createStoredProcedureQuery("DBSGR.AUTH.SP_LISTAR_USUARIOS", UsuarioEntity.class)
                     .registerStoredProcedureParameter("p_cursor", void.class, ParameterMode.OUT);
 
             query.execute();
 
             @SuppressWarnings("unchecked")
-            List<Usuario> usuarios = query.getResultList();
+            List<UsuarioEntity> usuarios = query.getResultList();
             return usuarios;
 
         } catch (Exception e) {

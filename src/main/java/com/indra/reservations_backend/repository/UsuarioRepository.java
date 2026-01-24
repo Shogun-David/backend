@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.indra.reservations_backend.models.Usuario;
+import com.indra.reservations_backend.models.UsuarioEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,10 +18,10 @@ import java.util.Optional;
  * - Búsqueda de usuario por username (necesario para autenticación)
  */
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
 
     @Query("SELECT u FROM Usuario u JOIN u.roles r WHERE r.nombre = :rolNombre")
-    List<Usuario> findAllByRoleNombre(@Param("rolNombre") String rolNombre);
+    List<UsuarioEntity> findAllByRoleNombre(@Param("rolNombre") String rolNombre);
     
     /**
      * Busca un usuario por su username.
@@ -30,7 +30,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
      * @param username El nombre de usuario
      * @return Optional con el usuario si existe
      */
-    Optional<Usuario> findByUsername(String username);
+    Optional<UsuarioEntity> findByUsername(String username);
     
     /**
      * Verifica si existe un usuario con el username dado.

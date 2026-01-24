@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.indra.reservations_backend.models.Usuario;
+import com.indra.reservations_backend.models.UsuarioEntity;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -59,7 +59,7 @@ public class JwtService {
      * @param usuario El usuario autenticado
      * @return Token JWT firmado (String)
      */
-    public String generateToken(Usuario usuario) {
+    public String generateToken(UsuarioEntity usuario) {
         Map<String, Object> claims = new HashMap<>();
         // Convertir los roles a String separado por comas
         String rolesString = usuario.getRoles().stream()

@@ -17,23 +17,23 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @Entity
-@Table(name = "SALA")
-public class SalaEntity {
+@Table(name = "ESTADO_RESERVA")
+public class EstadoReservaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sala_seq")
-    @SequenceGenerator(name = "sala_seq", sequenceName = "SEQ_SALA", allocationSize = 1)
-
-
-    @Column(name = "ID_SALA")
-    private Long idSala;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "estado_reserva_seq")
+    @SequenceGenerator(name = "estado_reserva_seq", sequenceName = "SEQ_ESTADO_RESERVA", allocationSize = 1)
 
     
-    private String nombre;
+    @Column(name = "ID_ESTADO")
+    private Long idEstado;
 
-    private Integer capacidad;
-
-    private String ubicacion;
-
-    private String estado;
+    @Column(name = "DESCRIPCION", nullable = false, unique = true, length = 30)
+    private String descripcion;
 }
+
+
+
+
+
+

@@ -29,3 +29,4 @@ public class ReservaRequestDto {
     @Size(max = 255, message = "La observación no puede superar los 255 caracteres")
     private String observacion;
 }
+//-- IGNORE ---

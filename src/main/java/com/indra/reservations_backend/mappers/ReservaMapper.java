@@ -12,7 +12,7 @@ public class ReservaMapper {
         
         return ReservaResponseDto.builder()
             .idReserva(reservaEntity.getIdReserva())
-            
+             
             .build();
 
 

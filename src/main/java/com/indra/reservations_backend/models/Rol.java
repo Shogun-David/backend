@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
  * - nombre: Nombre del rol (ADMIN, USUARIO, etc.)
  */
 @Entity
-@Table(name = "rol")
+@Table(name = "ROL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,8 +22,10 @@ import lombok.NoArgsConstructor;
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_rol")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator ="rol_seq")
+    @SequenceGenerator(name ="rol_seq", sequenceName = "SEQ_ROL", allocationSize = 1)
+
+    @Column(name = "ID_ROL")
     private Long idRol;
 
     @Column(nullable = false, unique = true, length = 50)

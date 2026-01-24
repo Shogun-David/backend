@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReservaAdminDto {
+public class ReservaListadoAdminDto {
     private Long idReserva;
     private String usuario;
     private String sala;
@@ -17,3 +17,4 @@ public class ReservaAdminDto {
     private LocalDateTime fechaFin;
     private String estado;
 }
+//-- IGNORE ---

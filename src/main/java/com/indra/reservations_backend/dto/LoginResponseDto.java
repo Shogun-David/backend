@@ -1,7 +1,5 @@
 package com.indra.reservations_backend.dto;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +10,5 @@ import lombok.NoArgsConstructor;
 public class LoginResponseDto {
     
     private String token;
-    private String username;
-    private List<String> roles;
+ 
 }

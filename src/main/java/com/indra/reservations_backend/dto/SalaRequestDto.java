@@ -24,3 +24,4 @@ public class SalaRequestDto {
 
     private String estado; // D / N
 }
+//-- IGNORE ---

@@ -3,7 +3,7 @@ package com.indra.reservations_backend.service;
 import com.indra.reservations_backend.dto.LoginRequestDto;
 import com.indra.reservations_backend.dto.LoginResponseDto;
 import com.indra.reservations_backend.dto.ValidateTokenResponseDto;
-import com.indra.reservations_backend.models.Usuario;
+import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -54,7 +54,7 @@ public class AuthService {
         );
 
         // Obtener el usuario autenticado
-        Usuario usuario = (Usuario) authentication.getPrincipal();
+        UsuarioEntity usuario = (UsuarioEntity) authentication.getPrincipal();
 
         // Generar token JWT
         String token = jwtService.generateToken(usuario);
