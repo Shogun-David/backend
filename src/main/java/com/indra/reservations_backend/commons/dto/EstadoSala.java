@@ -3,7 +3,7 @@ package com.indra.reservations_backend.commons.dto;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-import com.indra.reservations_backend.commons.exception.BussinessException;
+import com.indra.reservations_backend.exception.BussinessException;
 
 public enum EstadoSala {
     DISPONIBLE("D"),

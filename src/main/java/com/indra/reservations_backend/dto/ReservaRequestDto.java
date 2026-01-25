@@ -1,7 +1,6 @@
 package com.indra.reservations_backend.dto;
 
 import java.time.LocalDateTime;
-
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

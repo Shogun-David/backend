@@ -1,4 +1,4 @@
-package com.indra.reservations_backend.commons.exception;
+package com.indra.reservations_backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

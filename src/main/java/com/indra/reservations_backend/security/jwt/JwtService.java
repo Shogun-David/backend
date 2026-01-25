@@ -61,11 +61,8 @@ public class JwtService {
      */
     public String generateToken(UsuarioEntity usuario) {
         Map<String, Object> claims = new HashMap<>();
-        // Convertir los roles a String separado por comas
-        String rolesString = usuario.getRoles().stream()
-                .map(rol -> rol.getNombre())
-                .collect(java.util.stream.Collectors.joining(","));
-        claims.put("roles", rolesString);
+        // Rol fijo: todos los usuarios tienen rol USUARIO
+        claims.put("roles", "USUARIO");
         
         return Jwts.builder()
                 .claims(claims)

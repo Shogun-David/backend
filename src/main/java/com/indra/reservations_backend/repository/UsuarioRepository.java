@@ -20,9 +20,6 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
 
-    @Query("SELECT u FROM Usuario u JOIN u.roles r WHERE r.nombre = :rolNombre")
-    List<UsuarioEntity> findAllByRoleNombre(@Param("rolNombre") String rolNombre);
-    
     /**
      * Busca un usuario por su username.
      * Se utiliza para cargar el usuario durante el proceso de autenticación.
@@ -40,13 +37,4 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
      * @return true si existe, false en caso contrario
      */
     boolean existsByUsername(String username);
-
-    /**
-     * Verifica si existe un usuario con el email dado.
-     * Permite validar la unicidad del correo electrónico al crear usuarios.
-     *
-     * @param email correo electrónico del usuario
-     * @return true si ya existe, false en caso contrario
-     */
-    boolean existsByEmail(String email);
 }

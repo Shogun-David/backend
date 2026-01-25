@@ -1,7 +1,7 @@
 package com.indra.reservations_backend.security.filter;
 
 import com.indra.reservations_backend.security.jwt.JwtService;
-import com.indra.reservations_backend.service.UsuarioService;
+import com.indra.reservations_backend.service.IUsuarioService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,7 +46,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UsuarioService usuarioService;
+    private final IUsuarioService usuarioService;
 
     @Override
     protected void doFilterInternal(
@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         log.debug("JwtAuthenticationFilter - Path: {}", path);
         
-        if (path.startsWith("/auth/") || 
+        if (path.startsWith("/api/auth") || 
             path.startsWith("/swagger-ui") ||
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/swagger-resources") ||

@@ -1,25 +1,12 @@
 package com.indra.reservations_backend.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.io.Serializable;
 import java.time.LocalDateTime;
-import jakarta.persistence.PrePersist;
-
-
 
 @Entity
 @Table(name = "USUARIO_ROL")
@@ -30,14 +17,18 @@ import jakarta.persistence.PrePersist;
 @Builder
 public class UsuarioRol {
 
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_rol_seq")
+    @SequenceGenerator(name = "usuario_rol_seq", sequenceName = "SEQ_USUARIO_ROL", allocationSize = 1)
+    @Column(name = "ID_USUARIO_ROL")
+    private Long idUsuarioRol;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_USUARIO")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO", nullable = false)
     private UsuarioEntity usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_ROL")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ROL", nullable = false)
     private Rol rol;
     
     @Column(name = "FECHA_ASIGNACION", nullable = false)
@@ -46,7 +37,5 @@ public class UsuarioRol {
     @PrePersist
     protected void onCreate() {
         this.fechaAsignacion = LocalDateTime.now();
-        
     }
-   
 }

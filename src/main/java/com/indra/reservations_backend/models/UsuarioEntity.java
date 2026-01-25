@@ -2,7 +2,13 @@ package com.indra.reservations_backend.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 
 @Entity
@@ -11,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UsuarioEntity {
+public class UsuarioEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
@@ -25,11 +31,50 @@ public class UsuarioEntity {
     @Column(nullable = false)
     private String password;
 
-
     @Column(nullable = false, length = 1)
     private String estado; // ACTIVO, INACTIVO
 
     @Column(name = "FECHA_CREACION")
     private LocalDateTime fechaCreacion;
-   
+
+    /**
+     * Implementación de UserDetails.getAuthorities()
+     * Retorna rol USER por defecto
+     */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    /**
+     * Implementación de UserDetails.isAccountNonExpired()
+     */
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    /**
+     * Implementación de UserDetails.isAccountNonLocked()
+     */
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    /**
+     * Implementación de UserDetails.isCredentialsNonExpired()
+     */
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    /**
+     * Implementación de UserDetails.isEnabled()
+     */
+    @Override
+    public boolean isEnabled() {
+        return "A".equals(this.estado);
+    }
 }
