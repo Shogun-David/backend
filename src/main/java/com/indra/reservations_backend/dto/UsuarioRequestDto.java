@@ -1,6 +1,4 @@
 package com.indra.reservations_backend.dto;
-
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -21,6 +19,5 @@ public class UsuarioRequestDto {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 9, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
-
   
 }

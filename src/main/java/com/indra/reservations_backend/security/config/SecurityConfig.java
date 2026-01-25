@@ -33,8 +33,8 @@ public class SecurityConfig {
                 
                 // Configurar autorización de requests
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**", "/api/usuarios").permitAll()
                         .requestMatchers(
-                        "/api/auth/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/v3/api-docs/**",

@@ -25,7 +25,7 @@ public class UsuarioController {
     private final IUsuarioService usuarioService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN',)")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Listar todos los usuarios")
     public ResponseEntity<List<UsuarioResponseDto>> getAll() {
         return ResponseEntity.ok(usuarioService.findAll());
@@ -39,7 +39,6 @@ public class UsuarioController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(summary = "Crear nuevo usuario")
     public ResponseEntity<UsuarioResponseDto> create(@Valid @RequestBody UsuarioRequestDto request) {
         return new ResponseEntity<>(usuarioService.save(request), HttpStatus.CREATED);
