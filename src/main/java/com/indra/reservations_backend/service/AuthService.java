@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import com.indra.reservations_backend.security.impl.UserDetailsImpl;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +27,9 @@ public class AuthService {
         );
 
         // Obtener el usuario autenticado
-        UsuarioEntity usuario = (UsuarioEntity) authentication.getPrincipal();
-       
-        String token = jwtService.generateToken(usuario);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String token = jwtService.generateToken(userDetails.getUsuario());
+
 
         return new LoginResponseDto(token);
     }

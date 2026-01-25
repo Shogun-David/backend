@@ -73,10 +73,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Cargar los detalles del usuario desde la BD
                 UserDetails userDetails = usuarioService.loadUserByUsername(username);
 
-                // Validar el token
-                if (jwtService.validateToken(jwt, userDetails)) {
+                // Validar el token (verifica que no esté expirado)
+                if (jwtService.validateToken(jwt)) {
                     
-                    // Crear el objeto Authentication
+                    // Crear el objeto Authentication con roles del token
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -90,6 +90,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     
                     // Establecer la autenticación en el SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("JwtAuthenticationFilter - Usuario autenticado: {} con roles: {}", 
+                            username, userDetails.getAuthorities());
                 }
             }
         } catch (Exception e) {

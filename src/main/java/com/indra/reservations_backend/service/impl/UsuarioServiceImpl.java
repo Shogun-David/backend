@@ -11,8 +11,7 @@ import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.models.UsuarioRol;
 import com.indra.reservations_backend.repository.RolRepository;
 import com.indra.reservations_backend.repository.UsuarioRepository;
-import com.indra.reservations_backend.repository.UsuarioRolRepository;
-import com.indra.reservations_backend.service.IUsuarioService;
+import com.indra.reservations_backend.repository.UsuarioRolRepository;import com.indra.reservations_backend.security.impl.UserDetailsImpl;import com.indra.reservations_backend.service.IUsuarioService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -46,13 +45,19 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     /**
      * Implementa loadUserByUsername de UserDetailsService.
-     * Llamado automáticamente por Spring Security durante autenticación.
+     * Retorna UserDetailsImpl con usuario y sus roles desde USUARIO_ROL.
      */
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return (UserDetails) usuarioRepository.getByUsername(username)
+        UsuarioEntity usuario = usuarioRepository.getByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        
+        // Obtener los roles del usuario desde USUARIO_ROL
+        List<UsuarioRol> usuarioRoles = usuarioRolRepository.getRolesByUsuario(usuario);
+        
+        // Retornar UserDetailsImpl con usuario y roles
+        return new UserDetailsImpl(usuario, usuarioRoles);
     }
 
     @Override
