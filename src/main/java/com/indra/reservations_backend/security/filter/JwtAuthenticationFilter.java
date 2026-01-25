@@ -17,29 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * 🔹 PASO 6-7-8: Filtro de autenticación JWT
- * 
- * Intercepta TODOS los requests (excepto públicos) y valida el token.
- * 
- * Flujo para requests protegidos:
- * 6️⃣ Cliente envía request con header: Authorization: Bearer <JWT>
- *    ↓
- * 7️⃣ JwtAuthenticationFilter intercepta antes de llegar al controller
- *    ↓ Extrae token del header
- *    ↓ JwtService.validateToken() verifica firma y expiración
- *    ↓
- * 8️⃣ Si válido:
- *    - Carga usuario desde BD
- *    - Establece SecurityContext con autenticación
- *    - Request procede al controller ✅
- *    
- * 9️⃣ Si inválido/expirado:
- *    - NO establece SecurityContext
- *    - Spring Security retorna 401 Unauthorized ❌
- * 
- * Endpoints públicos (/auth/**, /swagger-ui/**) se saltan este filtro.
- */
+
 @Component
 @RequiredArgsConstructor
 @Slf4j

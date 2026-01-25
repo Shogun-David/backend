@@ -6,13 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entidad Rol que representa la tabla rol en la base de datos.
- * 
- * Estructura:
- * - id_rol: PK
- * - nombre: Nombre del rol (ADMIN, USUARIO, etc.)
- */
 @Entity
 @Table(name = "ROL")
 @Data

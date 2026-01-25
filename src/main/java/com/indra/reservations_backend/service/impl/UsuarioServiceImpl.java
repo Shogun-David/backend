@@ -6,7 +6,10 @@ import com.indra.reservations_backend.dto.UsuarioResponseDto;
 import com.indra.reservations_backend.exception.ConflictException;
 import com.indra.reservations_backend.exception.ResourceNotFoundException;
 import com.indra.reservations_backend.mappers.UsuarioMapper;
+import com.indra.reservations_backend.models.Rol;
 import com.indra.reservations_backend.models.UsuarioEntity;
+import com.indra.reservations_backend.models.UsuarioRol;
+import com.indra.reservations_backend.repository.RolRepository;
 import com.indra.reservations_backend.repository.UsuarioRepository;
 import com.indra.reservations_backend.repository.UsuarioRolRepository;
 import com.indra.reservations_backend.service.IUsuarioService;
@@ -35,6 +38,8 @@ import java.util.stream.Collectors;
 public class UsuarioServiceImpl implements IUsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
+    private final UsuarioRolRepository usuarioRolRepository;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
     private final EntityManager entityManager;
@@ -46,7 +51,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByUsername(username)
+        return (UserDetails) usuarioRepository.getByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
     }
 
@@ -71,21 +76,37 @@ public class UsuarioServiceImpl implements IUsuarioService {
     }
 
     /**
-     * Crea un nuevo usuario.
+     * Crea un nuevo usuario y lo asigna automáticamente al rol USUARIO por defecto.
      */
     @Override
     @Transactional
     public UsuarioResponseDto save(UsuarioRequestDto dto) {
-        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
+        if (usuarioRepository.getByUsername(dto.getUsername()).isPresent()) {
             throw new ConflictException("El usuario ya existe");
         }
 
+        // Obtener el rol por defecto (USUARIO)
+        Rol rolDefecto = rolRepository.findById(1L)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol USUARIO con id=1 no encontrado. Verifica que exista en la tabla ROL"));
+
+        // Crear y guardar el usuario
         UsuarioEntity usuario = usuarioMapper.toEntity(dto);
         usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
         usuario.setEstado("A");
         usuario.setFechaCreacion(LocalDateTime.now());
 
         UsuarioEntity guardado = usuarioRepository.save(usuario);
+        usuarioRepository.flush(); // Asegurar que el usuario se guarde antes de crear la relación
+
+        // Crear la relación usuario-rol automáticamente en USUARIO_ROL
+        UsuarioRol usuarioRol = UsuarioRol.builder()
+                .usuario(guardado)
+                .rol(rolDefecto)
+                .build();
+
+        usuarioRolRepository.save(usuarioRol);
+        usuarioRolRepository.flush(); // Asegurar que la relación se guarde
+
         return usuarioMapper.toResponseDto(guardado);
     }
 

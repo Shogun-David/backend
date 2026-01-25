@@ -19,5 +19,7 @@ public class UsuarioRequestDto {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 9, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
+    
+   
   
 }
