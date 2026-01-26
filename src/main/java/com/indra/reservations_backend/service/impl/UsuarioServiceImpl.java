@@ -80,7 +80,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Transactional
     public UsuarioResponseDto save(UsuarioRequestDto dto) {
         if (usuarioRepository.getByUsername(dto.getUsername()).isPresent()) {
-            throw new ConflictException("El usuario ya existe");
+            throw new ConflictException("El username ya esta registrado");
         }
 
         // Obtener el rol por defecto (USUARIO)

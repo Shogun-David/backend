@@ -35,7 +35,8 @@ public class GlobalExceptionHandler {
       BadRequestException.class,
       ResourceNotFoundException.class,
       BussinessException.class,
-      AuthException.class
+      AuthException.class,
+      ConflictException.class
   })
   public ResponseEntity<ExceptionDto> handleCustomExceptions(RuntimeException ex, HttpServletRequest request) {
     HttpStatus status = getStatus(ex);
