@@ -9,7 +9,6 @@ import com.indra.reservations_backend.dto.SalaResponseDto;
 import com.indra.reservations_backend.service.ISalaService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RequestMapping("/salas")
 @RestController
-@Tag(name = "Salas", description = "Gestión de salas")
 @SecurityRequirement(name = "Bearer Authentication")
 public class SalaController {
 

@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.indra.reservations_backend.exception.BadRequestException;
@@ -25,7 +27,7 @@ import com.indra.reservations_backend.models.SalaEntity;
 import com.indra.reservations_backend.repository.IEstadoReservaRepository;
 import com.indra.reservations_backend.repository.IReservaRepository;
 import com.indra.reservations_backend.repository.ISalaRepository;
-import com.indra.reservations_backend.security.utils.SecurityUtils;
+import com.indra.reservations_backend.repository.UsuarioRepository;
 import com.indra.reservations_backend.service.IReservaService;
 
 import jakarta.persistence.EntityManager;
@@ -46,6 +48,7 @@ public class ReservaServiceImpl implements IReservaService{
     private final ReservaMapper reservaMapper;
     private final IEstadoReservaRepository estadoReservaRepository;
     private final ISalaRepository salaRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     public ReservaResponseDto findById(Long id) {
@@ -59,7 +62,7 @@ public class ReservaServiceImpl implements IReservaService{
     @Override
     public PageImpl<ReservaResponseDto> getReservasByUser(PaginationModel paginationModel) {
 
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = getAuthenticatedUserId();
 
         int page = (paginationModel.getPageNumber() != null) ? paginationModel.getPageNumber() : 0;
         int rowPage = (paginationModel.getRowsPerPage() != null && paginationModel.getRowsPerPage() > 0)
@@ -121,7 +124,7 @@ public class ReservaServiceImpl implements IReservaService{
             ReservaCalendarRequest request
     ) {
 
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = getAuthenticatedUserId();
 
         String jpql = """
             SELECT new com.indra.reservations_backend.dto.ReservaResponseDto(
@@ -298,7 +301,7 @@ public class ReservaServiceImpl implements IReservaService{
     @Transactional
     @Override
     public ReservaResponseDto save(ReservaRequestDto reserva) {
-        Long userId = SecurityUtils.getAuthenticatedUserId();
+        Long userId = getAuthenticatedUserId();
 
         if (reserva.getFechaFin().isBefore(reserva.getFechaInicio())
             || reserva.getFechaFin().isEqual(reserva.getFechaInicio())) {
@@ -372,6 +375,19 @@ public class ReservaServiceImpl implements IReservaService{
         }
     }
 
+    private Long getAuthenticatedUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username;
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+        return usuarioRepository.getByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"))
+                .getIdUsuario();
+    }
+
   
     @Transactional
     public void cancelarReserva(Long idReserva) {
@@ -403,6 +419,3 @@ public class ReservaServiceImpl implements IReservaService{
 
 
 }
-
-
-

@@ -25,14 +25,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/reservas")
-@Tag(name = "Reservas", description = "Gestión de reservas")
 @SecurityRequirement(name = "Bearer Authentication")
 public class ReservaController {
 
@@ -66,14 +64,7 @@ public class ReservaController {
         return ResponseEntity.ok(reservaService.getUserReservasForCalendar(request));
     }
 
-    /**
-     * Obtiene todas las reservas (solo admin).
-     *
-     * @param estado (opcional) filtro por estado de la reserva
-     * @param page   página actual para paginación
-     * @param size   tamaño de página
-     * @return lista de reservas para admin
-     */
+   
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin")
     @Operation(summary = "Listar reservas (admin)", description = "Retorna todas las reservas para el administrador.")

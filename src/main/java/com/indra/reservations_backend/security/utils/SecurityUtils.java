@@ -25,4 +25,6 @@ public class SecurityUtils {
         UsuarioEntity usuario = getAuthenticatedUser();
         return usuario != null ? usuario.getIdUsuario() : null;
     }
+
+    
 }
