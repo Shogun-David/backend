@@ -96,7 +96,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             // Si hay error al procesar el token, simplemente continuar sin autenticar
             // El endpoint protegido rechazará el request
-            logger.error("Error procesando token JWT: " + e.getMessage());
+            log.error("Error procesando token JWT - Tipo: {}, Mensaje: {}", 
+              e.getClass().getSimpleName(), e.getMessage(), e);
         }
 
         // Continuar con la cadena de filtros
