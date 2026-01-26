@@ -3,11 +3,9 @@ package com.indra.reservations_backend.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class BadRequestException extends RuntimeException {
-
-    public BadRequestException(String message) {
+@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+public class ResourceUnAuthorizedException extends RuntimeException {
+    public ResourceUnAuthorizedException(String message) {
         super(message);
     }
-    
 }

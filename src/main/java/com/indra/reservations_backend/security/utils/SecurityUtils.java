@@ -25,4 +25,19 @@ public class SecurityUtils {
         UsuarioEntity usuario = getAuthenticatedUser();
         return usuario != null ? usuario.getIdUsuario() : null;
     }
+
+    public static boolean hasRole(String role) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        String roleName = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+
+        return authentication.getAuthorities().stream()
+                .anyMatch(auth -> roleName.equals(auth.getAuthority()));
+    }
+
 }

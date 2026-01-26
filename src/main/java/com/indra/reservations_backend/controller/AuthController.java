@@ -4,7 +4,6 @@ import com.indra.reservations_backend.dto.LoginRequestDto;
 import com.indra.reservations_backend.dto.LoginResponseDto;
 import com.indra.reservations_backend.dto.UsuarioRequestDto;
 import com.indra.reservations_backend.dto.UsuarioResponseDto;
-import com.indra.reservations_backend.dto.ValidateTokenResponseDto;
 import com.indra.reservations_backend.service.AuthService;
 import com.indra.reservations_backend.service.UsuarioService;
 
@@ -105,19 +104,5 @@ public class AuthController {
                 UsuarioResponseDto creado = usuarioService.createUsuario(request);
                 return ResponseEntity.status(HttpStatus.CREATED).body(creado);
         }
-
-        @GetMapping("/validate")
-        public ResponseEntity<ValidateTokenResponseDto> validateToken(
-                @RequestHeader("Authorization") String authHeader) {
-
-                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                }
-
-                String token = authHeader.substring(7);
-
-                return ResponseEntity.ok(authService.validateToken(token));
-        }
-
 
 }

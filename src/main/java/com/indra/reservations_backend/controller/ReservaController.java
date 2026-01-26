@@ -1,6 +1,5 @@
 package com.indra.reservations_backend.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -12,12 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.indra.reservations_backend.dto.CancelarReservaRequestDto;
-import com.indra.reservations_backend.dto.ReservaAdminDto;
-import com.indra.reservations_backend.dto.ReservaDisponibilidadDto;
+import com.indra.reservations_backend.commons.models.PaginationModel;
+import com.indra.reservations_backend.dto.ReservaCalendarRequest;
+import com.indra.reservations_backend.dto.ReservaListadoAdminDto;
 import com.indra.reservations_backend.dto.ReservaRequestDto;
 import com.indra.reservations_backend.dto.ReservaResponseDto;
 import com.indra.reservations_backend.service.IReservaService;
@@ -36,27 +34,32 @@ public class ReservaController {
 
     private final IReservaService reservaService;
 
-    /**
-     * Obtiene todas las reservas del usuario autenticado.
-     *
-     * @param estado (opcional) filtro por estado de la reserva
-     * @param page   página actual para paginación
-     * @param size   tamaño de página
-     * @return lista de reservas del usuario
-     */
+    
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/by-user")
+    @GetMapping("/{id}")
+    public ResponseEntity<ReservaResponseDto> getReservaById(@PathVariable Long id) {
+        return ResponseEntity.ok(reservaService.findById(id));
+    }
+
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PostMapping("/by-user")
     @Operation(summary = "Listar reservas por usuario", description = "Retorna las reservas del usuario autenticado.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de reservas retornada correctamente"),
             @ApiResponse(responseCode = "403", description = "Acceso denegado")
     })
-    public ResponseEntity<Iterable<ReservaResponseDto>> getReservasByUser(
-            @Parameter(description = "Estado de la reserva (opcional)") @RequestParam(required = false) String estado,
-            @Parameter(description = "Página actual (default = 1)") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "Tamaño de página (default = 8)") @RequestParam(defaultValue = "8") int size
+    public ResponseEntity<Iterable<ReservaResponseDto>> getReservasByUser(@RequestBody PaginationModel paginationModel) {
+        return ResponseEntity.ok(reservaService.getReservasByUser(paginationModel));
+    }
+
+    
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PostMapping("/by-user/calendar")
+    public ResponseEntity<List<ReservaResponseDto>> getUserReservasForCalendar(
+            @Valid @RequestBody ReservaCalendarRequest request
     ) {
-        return ResponseEntity.ok(reservaService.getReservasByUser(estado, page, size));
+        return ResponseEntity.ok(reservaService.getUserReservasForCalendar(request));
     }
 
     /**
@@ -68,18 +71,14 @@ public class ReservaController {
      * @return lista de reservas para admin
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin")
+    @PostMapping("/admin")
     @Operation(summary = "Listar reservas (admin)", description = "Retorna todas las reservas para el administrador.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de reservas retornada correctamente"),
             @ApiResponse(responseCode = "403", description = "Acceso denegado")
     })
-    public ResponseEntity<Iterable<ReservaAdminDto>> getReservasAdmin(
-            @Parameter(description = "Estado de la reserva (opcional)") @RequestParam(required = false) String estado,
-            @Parameter(description = "Página actual (default = 1)") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "Tamaño de página (default = 8)") @RequestParam(defaultValue = "8") int size
-    ) {
-        return ResponseEntity.ok(reservaService.getReservationsAdmin(estado, page, size));
+    public ResponseEntity<Iterable<ReservaListadoAdminDto>> getReservaListadoAdmin(@RequestBody PaginationModel paginationModel ) {
+        return ResponseEntity.ok(reservaService.getReservaListadoAdmin(paginationModel));
     }
 
     /**
@@ -114,37 +113,11 @@ public class ReservaController {
             @ApiResponse(responseCode = "404", description = "Reserva no encontrada")
     })
     public ResponseEntity<Void> cancelarReserva(
-            @Parameter(description = "ID de la reserva") @PathVariable Long id,
-            @RequestBody CancelarReservaRequestDto requestDto
+            @Parameter(description = "ID de la reserva") @PathVariable Long id
     ) {
-        reservaService.cancelarReserva(id, requestDto);
+        reservaService.cancelarReserva(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * Obtiene disponibilidad de una sala por mes.
-     *
-     * @param salaId id de la sala
-     * @param year   año
-     * @param month  mes
-     * @return lista con disponibilidad de la sala
-     */
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @GetMapping("/disponibilidad")
-    @Operation(summary = "Disponibilidad sala", description = "Retorna disponibilidad de una sala en un mes específico.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Disponibilidad retornada correctamente"),
-            @ApiResponse(responseCode = "403", description = "Acceso denegado")
-    })
-    public ResponseEntity<List<ReservaDisponibilidadDto>> disponibilidad(
-            @Parameter(description = "ID de la sala") @RequestParam Long salaId,
-            @Parameter(description = "Año") @RequestParam int year,
-            @Parameter(description = "Mes") @RequestParam int month
-    ) {
-
-        LocalDate start = LocalDate.of(year, month, 1);
-        LocalDate end = start.plusMonths(1);
-
-        return ResponseEntity.ok(reservaService.getDisponibilidadSalaMes(salaId, start, end));
-    }
+    
 }

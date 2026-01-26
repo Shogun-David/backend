@@ -22,6 +22,7 @@
 
     <dependencies>
 
+
         <!-- WEB -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -71,6 +72,13 @@
             <version>0.12.3</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- JWT (Java JWT by Auth0) -->
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.4.0</version>
+		</dependency>	
 
         <!-- SWAGGER -->
         <dependency>

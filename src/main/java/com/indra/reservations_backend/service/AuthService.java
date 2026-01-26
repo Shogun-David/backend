@@ -2,8 +2,6 @@ package com.indra.reservations_backend.service;
 
 import com.indra.reservations_backend.dto.LoginRequestDto;
 import com.indra.reservations_backend.dto.LoginResponseDto;
-import com.indra.reservations_backend.dto.ValidateTokenResponseDto;
-import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -53,26 +51,17 @@ public class AuthService {
                 )
         );
 
-        // Obtener el usuario autenticado
-        UsuarioEntity usuario = (UsuarioEntity) authentication.getPrincipal();
+         List<String> roles = authentication.getAuthorities().stream()
+                .map(r -> r.getAuthority())
+                .filter(role -> !"FACTOR_PASSWORD".equals(role))
+                .toList();
 
         // Generar token JWT
-        String token = jwtService.generateToken(usuario);
+        String token = jwtService.generateToken(loginRequest.getUsername(), roles);
 
         // Retornar respuesta con el token
-        return new LoginResponseDto(token, usuario.getUsername(), usuario.getRolesList());
-    }
-
-    public ValidateTokenResponseDto validateToken(String token) {
-
-        if (!jwtService.validateToken(token)) {
-            throw new RuntimeException("Token invalido");
-        }
-
-        String username = jwtService.extractUsername(token);
-        List<String> roles = jwtService.extractRolesAsList(token);
-
-        return new ValidateTokenResponseDto(true, username, roles);
+        return new LoginResponseDto(token);
+       
     }
 
 }

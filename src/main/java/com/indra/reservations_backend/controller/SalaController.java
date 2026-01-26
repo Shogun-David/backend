@@ -29,31 +29,31 @@ public class SalaController {
     @Autowired
     private ISalaService salaService;
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     public ResponseEntity<SalaResponseDto> create(@Valid @RequestBody SalaRequestDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(salaService.save(dto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<SalaResponseDto> update(@PathVariable Long id, @Valid @RequestBody SalaRequestDto dto) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.update(id, dto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<SalaResponseDto> getMethodName(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.findById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     @PatchMapping("/{id}/estado")
     public ResponseEntity<SalaResponseDto> delete(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.cambiarEstadoSala(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/pagination")
     public ResponseEntity<Iterable<SalaResponseDto>> getPagination(@RequestBody PaginationModel paginationModel) {
         return ResponseEntity.status(HttpStatus.OK).body(salaService.getPagination(paginationModel));

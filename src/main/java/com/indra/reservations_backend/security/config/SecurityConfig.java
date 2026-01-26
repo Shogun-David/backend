@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos (sin autenticación) - ORDEN IMPORTANTE
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/reservas/**", "/salas/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()

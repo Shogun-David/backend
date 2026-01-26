@@ -5,7 +5,7 @@ import com.indra.reservations_backend.dto.UsuarioResponseDto;
 import com.indra.reservations_backend.models.Rol;
 import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.repository.RolRepository;
-import com.indra.reservations_backend.repository.UsuarioRepository;
+import com.indra.reservations_backend.repository.IUsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UsuarioService implements UserDetailsService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final IUsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final EntityManager entityManager;
@@ -61,9 +61,12 @@ public class UsuarioService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
+        /* 
         return usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Usuario no encontrado: " + username));
+                        */
     }
 
     /**
@@ -87,10 +90,13 @@ public class UsuarioService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     public List<UsuarioResponseDto> getAllUsuarios() {
+        /* 
         return usuarioRepository.findAllByRoleNombre("USER")
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+        */
+       return null;
     }
 
     /**
@@ -114,12 +120,12 @@ public class UsuarioService implements UserDetailsService {
      */
     @Transactional
     public UsuarioResponseDto createUsuario(UsuarioRequestDto request) {
+        /*
         validarUnicidad(request);
 
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .email(request.getEmail())
                 .estado("A")
                 .fechaCreacion(LocalDateTime.now())
                 .roles(obtenerRolPorDefecto()) // ✅ SIEMPRE USUARIO
@@ -127,6 +133,9 @@ public class UsuarioService implements UserDetailsService {
 
         UsuarioEntity guardado = usuarioRepository.save(usuario);
         return toDto(guardado);
+         */
+
+        return null;
     }
 
 
@@ -135,9 +144,7 @@ public class UsuarioService implements UserDetailsService {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El username ya se encuentra registrado");
         }
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya se encuentra registrado");
-        }
+    
     }
 
     private Set<Rol> obtenerRolPorDefecto() {
@@ -163,9 +170,8 @@ public class UsuarioService implements UserDetailsService {
         return new UsuarioResponseDto(
                 usuario.getIdUsuario(),
                 usuario.getUsername(),
-                usuario.getEmail(),
-                usuario.getRolesList(),
-                usuario.getEstado()
+                usuario.getEstado(),
+                usuario.getFechaCreacion().toString()
         );
     }
 
@@ -184,6 +190,7 @@ public class UsuarioService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     public List<UsuarioResponseDto> listarUsuariosConSP() {
+        /* 
         try {
             // Crear StoredProcedureQuery
             StoredProcedureQuery query = entityManager
@@ -211,6 +218,8 @@ public class UsuarioService implements UserDetailsService {
         } catch (Exception e) {
             throw new RuntimeException("Error ejecutando SP_LISTAR_USUARIOS: " + e.getMessage(), e);
         }
+            */
+           return null;
     }
 
     /**
