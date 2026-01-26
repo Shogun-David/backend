@@ -11,7 +11,9 @@ import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.models.UsuarioRol;
 import com.indra.reservations_backend.repository.RolRepository;
 import com.indra.reservations_backend.repository.UsuarioRepository;
-import com.indra.reservations_backend.repository.UsuarioRolRepository;import com.indra.reservations_backend.security.impl.UserDetailsImpl;import com.indra.reservations_backend.service.IUsuarioService;
+import com.indra.reservations_backend.repository.UsuarioRolRepository;
+import com.indra.reservations_backend.security.impl.UserDetailsImpl;
+import com.indra.reservations_backend.service.IUsuarioService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -52,21 +54,12 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UsuarioEntity usuario = usuarioRepository.getByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
-        
+
         // Obtener los roles del usuario desde USUARIO_ROL
         List<UsuarioRol> usuarioRoles = usuarioRolRepository.getRolesByUsuario(usuario);
-        
+
         // Retornar UserDetailsImpl con usuario y roles
         return new UserDetailsImpl(usuario, usuarioRoles);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UsuarioResponseDto> findAll() {
-        return usuarioRepository.findAll()
-                .stream()
-                .map(usuarioMapper::toResponseDto)
-                .collect(Collectors.toList());
     }
 
     /**
@@ -91,8 +84,8 @@ public class UsuarioServiceImpl implements IUsuarioService {
         }
 
         // Obtener el rol por defecto (USUARIO)
-        Rol rolDefecto = rolRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Rol USUARIO con id=1 no encontrado. Verifica que exista en la tabla ROL"));
+        Rol rolDefecto = rolRepository.findByNombre("USER")
+                .orElseThrow(() -> new ResourceNotFoundException("Rol USUARIO no existeL"));
 
         // Crear y guardar el usuario
         UsuarioEntity usuario = usuarioMapper.toEntity(dto);
@@ -121,7 +114,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDto update(Long id, UsuarioRequestDto dto) {
-       return null;
+        return null;
     }
 
     /**
@@ -132,10 +125,14 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public UsuarioResponseDto delete(Long id) {
         UsuarioEntity usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-        UsuarioResponseDto response = usuarioMapper.toResponseDto(usuario);
 
-        usuarioRepository.delete(usuario);
-        return response;
+        // Cambiar estado a 'I' (inactivo)
+        usuario.setEstado("I");
+
+        // Guardar el cambio
+        UsuarioEntity actualizado = usuarioRepository.save(usuario);
+
+        return usuarioMapper.toResponseDto(actualizado);
     }
 
     /**
@@ -188,4 +185,3 @@ public class UsuarioServiceImpl implements IUsuarioService {
         return new PageImpl<>(dtos, pageable, total);
     }
 }
-

@@ -8,23 +8,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.indra.reservations_backend.commons.dto.EstadoSala;
-
-import com.indra.reservations_backend.exception.BussinessException;
-import com.indra.reservations_backend.exception.ResourceNotFoundException;
-
 import com.indra.reservations_backend.commons.models.FilterModel;
 import com.indra.reservations_backend.commons.models.PaginationModel;
 import com.indra.reservations_backend.commons.models.SortModel;
 import com.indra.reservations_backend.dto.SalaRequestDto;
 import com.indra.reservations_backend.dto.SalaResponseDto;
+import com.indra.reservations_backend.exception.BussinessException;
+import com.indra.reservations_backend.exception.ResourceNotFoundException;
 import com.indra.reservations_backend.mappers.SalaMapper;
 import com.indra.reservations_backend.models.SalaEntity;
-import com.indra.reservations_backend.repository.IReservaRepository;
 import com.indra.reservations_backend.repository.ISalaRepository;
 import com.indra.reservations_backend.service.ISalaService;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 
@@ -35,28 +33,30 @@ public class SalaServiceImpl implements ISalaService {
     private final SalaMapper salaMapper;
     private final ISalaRepository salaRepository;
     private final EntityManager entityManager;
-    private final IReservaRepository reservaRepository;
 
     @Override
-    public SalaResponseDto save(SalaRequestDto request) {
-        if (request.getCapacidad() <= 0) {
+    public SalaResponseDto save(SalaRequestDto dto) {
+        if (dto.getCapacidad() <= 0) {
             throw new BussinessException("La capacidad debe ser mayor a 0");
         }
-        SalaEntity salaEntity = salaMapper.toEntity(request);
+
+        validarNombreSalaDuplicada(dto.getNombre(), dto.getUbicacion(), null);
+
+        SalaEntity salaEntity = salaMapper.toEntity(dto);
         SalaEntity savedEntity = salaRepository.save(salaEntity);
         return salaMapper.toResponseDto(savedEntity);
     }
 
     @Override
     public SalaResponseDto update(Long id, SalaRequestDto dto) {
-        SalaEntity salaEntity = salaMapper.toEntity(dto);
-
-        SalaEntity existingEntity = salaRepository.findById(id)
+        SalaEntity salaEntontrada = salaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró la Sala con id: " + id));
 
-        BeanUtils.copyProperties(salaEntity, existingEntity, "idSala", "estado");
+        validarNombreSalaDuplicada(dto.getNombre(), dto.getUbicacion(), id);
 
-        SalaEntity updatedEntity = salaRepository.save(existingEntity);
+        BeanUtils.copyProperties(dto, salaEntontrada, "idSala", "estado");
+
+        SalaEntity updatedEntity = salaRepository.save(salaEntontrada);
         return salaMapper.toResponseDto(updatedEntity);
     }
 
@@ -129,18 +129,20 @@ public class SalaServiceImpl implements ISalaService {
     }
 
     private String buildWhereClause(List<FilterModel> filters) {
-        if (filters == null || filters.isEmpty()) {
-            return "";
+        StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
+        boolean hasEstado = false;
+
+        if (filters != null) {
+            for (FilterModel filter : filters) {
+                if ("estado".equals(filter.getField())) {
+                    where.append(" AND s.estado = :estado ");
+                    hasEstado = true;
+                }
+            }
         }
 
-        StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
-
-        for (FilterModel filter : filters) {
-
-            if ("estado".equals(filter.getField())) {
-                where.append(" AND s.estado = :estado ");
-            }
-
+        if (!hasEstado) {
+            where.append(" AND s.estado = 'A' ");
         }
         return where.toString();
     }
@@ -183,26 +185,55 @@ public class SalaServiceImpl implements ISalaService {
 
     @Override
     public SalaResponseDto cambiarEstadoSala(Long id) {
-        Integer existe = reservaRepository.existeReservaActivaSala(id);
+        SalaEntity salaEntity = salaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la Sala con id: " + id));
+
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("SALA_PKG.EXISTE_RESERVA_ACTIVA_SALA");
+        query.registerStoredProcedureParameter("P_ID_SALA", Long.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("P_EXISTE", Integer.class, ParameterMode.OUT);
+
+        query.setParameter("P_ID_SALA", id);
+        query.execute();
+
+        Integer existe = (Integer) query.getOutputParameterValue("P_EXISTE");
 
         if (existe != null && existe == 1) {
             throw new BussinessException("No se puede cambiar el estado de la sala con reservas activas");
         }
-        
-        SalaEntity salaEntity = salaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la Sala con id: " + id));
 
-        EstadoSala estadoActual = EstadoSala.fromCode(salaEntity.getEstado());
-
-        EstadoSala nuevoEstado = estadoActual == EstadoSala.DISPONIBLE
-                ? EstadoSala.NO_DISPONIBLE
-                : EstadoSala.DISPONIBLE;
-
-        salaEntity.setEstado(nuevoEstado.getCode());
+        salaEntity.setEstado("A".equals(salaEntity.getEstado()) ? "I" : "A");
 
         SalaEntity updatedSala = salaRepository.save(salaEntity);
 
         return salaMapper.toResponseDto(updatedSala);
     }
 
+    private void validarNombreSalaDuplicada(String nombre, String ubicacion, Long idExcluir) {
+
+        StringBuilder jpql = new StringBuilder("""
+                    SELECT COUNT(s)
+                    FROM SalaEntity s
+                    WHERE UPPER(s.nombre) = UPPER(:nombre)
+                      AND UPPER(s.ubicacion) = UPPER(:ubicacion)
+                """);
+
+        if (idExcluir != null) {
+            jpql.append(" AND s.idSala != :idExcluir");
+        }
+
+        TypedQuery<Long> query = entityManager.createQuery(jpql.toString(), Long.class)
+                .setParameter("nombre", nombre)
+                .setParameter("ubicacion", ubicacion);
+
+        if (idExcluir != null) {
+            query.setParameter("idExcluir", idExcluir);
+        }
+
+        Long count = query.getSingleResult();
+
+        if (count > 0) {
+            throw new BussinessException(
+                    "Ya existe una sala con el mismo nombre y ubicación");
+        }
+    }
 }

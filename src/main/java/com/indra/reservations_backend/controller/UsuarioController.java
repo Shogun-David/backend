@@ -26,13 +26,6 @@ public class UsuarioController {
 
     private final IUsuarioService usuarioService;
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @Operation(summary = "Listar todos los usuarios")
-    public ResponseEntity<List<UsuarioResponseDto>> getAll() {
-        return ResponseEntity.ok(usuarioService.findAll());
-    }
-
     @PostMapping("/pagination")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Listar usuarios con paginación, filtros y ordenamiento")
@@ -45,12 +38,6 @@ public class UsuarioController {
     @Operation(summary = "Obtener usuario por ID")
     public ResponseEntity<UsuarioResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.findById(id));
-    }
-
-    @PostMapping
-    @Operation(summary = "Crear nuevo usuario")
-    public ResponseEntity<UsuarioResponseDto> create(@Valid @RequestBody UsuarioRequestDto request) {
-        return new ResponseEntity<>(usuarioService.save(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

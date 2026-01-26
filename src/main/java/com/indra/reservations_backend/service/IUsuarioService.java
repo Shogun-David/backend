@@ -5,7 +5,6 @@ import com.indra.reservations_backend.commons.interfaces.IPaginationCommons;
 import com.indra.reservations_backend.dto.UsuarioRequestDto;
 import com.indra.reservations_backend.dto.UsuarioResponseDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import java.util.List;
 
 /**
  * Interfaz para gestión de usuarios.
@@ -16,8 +15,4 @@ public interface IUsuarioService
                 IPaginationCommons<UsuarioResponseDto>,
                 UserDetailsService {
 
-    /**
-     * Obtiene todos los usuarios del sistema.
-     */
-    List<UsuarioResponseDto> findAll();
 }

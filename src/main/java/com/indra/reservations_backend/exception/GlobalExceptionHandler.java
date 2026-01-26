@@ -34,7 +34,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler({
       BadRequestException.class,
       ResourceNotFoundException.class,
-      BussinessException.class
+      BussinessException.class,
+      AuthException.class
   })
   public ResponseEntity<ExceptionDto> handleCustomExceptions(RuntimeException ex, HttpServletRequest request) {
     HttpStatus status = getStatus(ex);
