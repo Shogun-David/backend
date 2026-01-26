@@ -49,6 +49,9 @@ public class ReservaEntity {
     @Column(name = "FECHA_FIN", nullable = false)
     private LocalDateTime fechaFin;
 
+    @Column(name = "NUMERO_ASISTENTES", nullable = false)
+    private int numeroAsistentes;
+
     @Column(name = "FECHA_CREACION")
     private LocalDateTime fechaCreacion;
 

@@ -14,25 +14,20 @@ import com.indra.reservations_backend.security.impl.UserDetailsImpl;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
+        private final AuthenticationManager authenticationManager;
+        private final JwtService jwtService;
 
-    public LoginResponseDto login(LoginRequestDto loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+        public LoginResponseDto login(LoginRequestDto loginRequest) {
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                loginRequest.getUsername(),
+                                                loginRequest.getPassword()));
 
-        // Obtener el usuario autenticado
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String token = jwtService.generateToken(userDetails.getUsuario());
+                // Obtener el usuario autenticado
+                UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+                String token = jwtService.generateToken(userDetails.getUsuario());
 
-
-        return new LoginResponseDto(token);
-    }
-
-   
+                return new LoginResponseDto(token);
+        }
 
 }

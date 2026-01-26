@@ -1,5 +1,7 @@
 package com.indra.reservations_backend.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +14,9 @@ import lombok.NoArgsConstructor;
 public class ReservaResponseDto {
     private Long idReserva;
     private String sala;
-    private String fechaInicio;
-    private String fechaFin;
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFin;
+    private int numeroAsistentes;
     private String estado;
-    private String fechaCreacion;
+    private LocalDateTime fechaCreacion;
 }

@@ -18,14 +18,16 @@ public class ReservaRequestDto {
     private Long idSala;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
-    @Future(message = "La fecha de inicio debe ser futura")
     private LocalDateTime fechaInicio;
 
     @NotNull(message = "La fecha de fin es obligatoria")
     @Future(message = "La fecha de fin debe ser futura")
     private LocalDateTime fechaFin;
 
-    @Size(max = 255, message = "La observación no puede superar los 255 caracteres")
+    @NotNull(message = "El número de asistentes es obligatorio")
+    private int numeroAsistentes;
+
+    @Size(max = 50, message = "La observación no puede superar los 255 caracteres")
     private String observacion;
 }
 //-- IGNORE ---
