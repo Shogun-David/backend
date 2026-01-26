@@ -13,8 +13,12 @@ import java.util.List;
 @Repository
 public interface UsuarioRolRepository extends JpaRepository<UsuarioRol, Long> {
 
-    @Query("SELECT ur FROM UsuarioRol ur WHERE ur.usuario = :id_usuario")    
-    List<UsuarioRol> getRolesByUsuario(@Param("id_usuario") UsuarioEntity id_usuario);
-
+    
+    @Query("""
+    SELECT ur FROM UsuarioRol ur
+    JOIN FETCH ur.rol
+    WHERE ur.usuario = :usuario
+    """)
+    List<UsuarioRol> getRolesByUsuario(@Param("usuario") UsuarioEntity usuario);
     
 }

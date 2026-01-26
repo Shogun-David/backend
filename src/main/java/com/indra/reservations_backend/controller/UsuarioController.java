@@ -1,5 +1,6 @@
 package com.indra.reservations_backend.controller;
 
+import com.indra.reservations_backend.commons.models.PaginationModel;
 import com.indra.reservations_backend.dto.UsuarioRequestDto;
 import com.indra.reservations_backend.dto.UsuarioResponseDto;
 import com.indra.reservations_backend.service.IUsuarioService;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +31,13 @@ public class UsuarioController {
     @Operation(summary = "Listar todos los usuarios")
     public ResponseEntity<List<UsuarioResponseDto>> getAll() {
         return ResponseEntity.ok(usuarioService.findAll());
+    }
+
+    @PostMapping("/pagination")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @Operation(summary = "Listar usuarios con paginación, filtros y ordenamiento")
+    public ResponseEntity<PageImpl<UsuarioResponseDto>> getPagination(@RequestBody PaginationModel paginationModel) {
+        return ResponseEntity.ok(usuarioService.getPagination(paginationModel));
     }
 
     @GetMapping("/{id}")
@@ -58,3 +67,5 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.delete(id));
     }
 }
+
+

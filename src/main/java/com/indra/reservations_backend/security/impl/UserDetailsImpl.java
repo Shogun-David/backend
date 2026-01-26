@@ -16,12 +16,8 @@ public class UserDetailsImpl implements UserDetails {
     public UserDetailsImpl(UsuarioEntity usuario, List<UsuarioRol> usuarioRoles) {
         this.usuario = usuario;
         this.usuarioRoles = usuarioRoles;
-    }
-
-    /**
-     * Retorna la lista de autoridades/roles del usuario
-     * Ej: ROLE_ADMIN, ROLE_USUARIO
-     */
+    } 
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (usuarioRoles.isEmpty()) {
@@ -33,9 +29,6 @@ public class UserDetailsImpl implements UserDetails {
                 .toList();
     }
 
-    /**
-     * Retorna la contraseña del usuario
-     */
     @Override
     public String getPassword() {
         return usuario.getPassword();

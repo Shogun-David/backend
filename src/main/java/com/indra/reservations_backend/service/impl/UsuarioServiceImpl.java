@@ -121,16 +121,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDto update(Long id, UsuarioRequestDto dto) {
-        UsuarioEntity usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-
-        usuario.setUsername(dto.getUsername());
-        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
-            usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
-        }
-
-        UsuarioEntity actualizado = usuarioRepository.save(usuario);
-        return usuarioMapper.toResponseDto(actualizado);
+       return null;
     }
 
     /**

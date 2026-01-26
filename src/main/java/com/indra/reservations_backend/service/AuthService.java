@@ -2,7 +2,6 @@ package com.indra.reservations_backend.service;
 
 import com.indra.reservations_backend.dto.LoginRequestDto;
 import com.indra.reservations_backend.dto.LoginResponseDto;
-import com.indra.reservations_backend.models.UsuarioEntity;
 import com.indra.reservations_backend.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
